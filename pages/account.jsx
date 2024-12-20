@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction
-} from "@/components/ui/alert-dialog";
+} from "../components/ui/alert-dialog";
 
 const Account = () => {
     const router = useRouter();
@@ -36,14 +36,14 @@ const Account = () => {
       current: user.currentPlan === "free"
     },
     {
-      name: "premium",
+      name: "plus",
       price: "$7/month",
       features: [
         "Unlimited journal entries",
         "Advanced AI analysis",
         "Increased analysis interactions",
       ],
-      current: user.currentPlan === "premium"
+      current: user.currentPlan === "plus"
     }
   ];
 

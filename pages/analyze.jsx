@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
 const TypingAnimation = () => (
   <div className="flex space-x-1.5 px-4 py-3">
@@ -19,6 +20,7 @@ const SuggestionButton = ({ icon: Icon, text, onClick }) => (
 );
 
 const Analyze = () => {
+    const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -92,7 +94,7 @@ const Analyze = () => {
   return (
     <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
       {/* Floating Back Button */}
-     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900">
+     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
         <ArrowLeft className="w-5 h-5" />
       </button>
    

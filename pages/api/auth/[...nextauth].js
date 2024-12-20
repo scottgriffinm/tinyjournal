@@ -1,6 +1,7 @@
+// pages/api/auth/[...nextauth].js
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import pool from "../../../lib/db";
+import pool from "../../../lib/db"; // Import the MySQL connection pool
 
 export default NextAuth({
   providers: [
@@ -15,96 +16,72 @@ export default NextAuth({
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 60, // 30 minutes
-    updateAge: 10 * 60, // Update session token every 10 minutes
-  },
-  cookies: {
-    sessionToken: {
-      name: "__Secure-next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "none", // Cross-origin cookies
-        secure: process.env.NODE_ENV === "production", // Only secure cookies in production
-        path: "/", // Accessible throughout the app
-      },
-    },
-  },
+  session: { strategy: "jwt" },
   callbacks: {
     async signIn({ user }) {
-      console.log("SignIn Callback Triggered for User:", user);
-
       try {
-        // Check if user exists in the database
+        // Check if the user exists in the database
         const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [user.email]);
 
         if (rows.length === 0) {
-          console.log(`New user detected: ${user.email}`);
-
-          // Add user to the `users` table
+          // If the user does not exist, create a new user
           await pool.query(
-            `
-            INSERT INTO users (email, password, confirmed, listenCount, samplesHeard, sampleQueue, vibe)
-            VALUES (?, "googleSignIn", true, 0, '[]', '[]', '')
-            `,
-            [user.email]
+            "INSERT INTO users (email, password, name) VALUES (?, ?, ?)",
+            [user.email, null, user.name || "Unknown"]
           );
-
-          console.log(`User ${user.email} added to the database`);
-
+          console.log(`New user ${user.email} added to the database`);
         } else {
           console.log(`User ${user.email} already exists in the database`);
         }
 
         return true; // Allow sign-in
       } catch (error) {
-        console.error("Error during sign-in callback:", error);
-        return false; // Deny sign-in
+        console.error("Error in signIn callback:", error);
+        return false; // Deny sign-in on error
       }
     },
-
     async jwt({ token, account, user }) {
-      console.log("JWT Callback Triggered");
-      console.log("Before JWT Update:", { token, account, user });
-
       if (account) {
-        // Store account details during initial sign-in
         token.accessToken = account.access_token;
-        token.accessTokenExpires = Date.now() + 30 * 60 * 1000; // 30-minute expiration
-        if (user) {
-          token.email = user.email;
-        }
+        token.accessTokenExpires = Date.now() + 1800 * 1000; // 30-minute expiration
       }
 
-      // Check if the token has expired
+      // Include the user's email in the token during initial sign-in
+      if (user) {
+        token.email = user.email;
+      }
+
       if (Date.now() > token.accessTokenExpires) {
-        console.log("JWT Callback: Access token expired");
-        return null; // Return null if expired
+        return null; // Expired token
       }
 
-      console.log("After JWT Update:", token);
       return token;
     },
-
     async session({ session, token }) {
-      console.log("Session Callback Triggered");
-      console.log("Before Session Update:", { session, token });
-
       if (!token) {
-        console.log("Session Callback: Token invalid or expired");
         session.error = "SessionExpired";
-        return null; // No session if token is invalid
+        return null;
       }
-
-      session.user = {
-        email: token.email,
-      };
       session.accessToken = token.accessToken;
-
-      console.log("After Session Update:", session);
+      session.user.email = token.email; // Include the email in the session
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Redirect to the home page after login
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/home`;
+      } else if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      return baseUrl;
+    },
   },
-  debug: true, // Enable detailed logs for troubleshooting
+  events: {
+    async signIn(message) {
+      console.log("Sign in event:", message);
+    },
+    async signOut(message) {
+      console.log("Sign out event:", message);
+    },
+  },
 });
