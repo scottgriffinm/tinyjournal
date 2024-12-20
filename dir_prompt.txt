@@ -1,0 +1,1070 @@
+tailwind.config.js:
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./pages/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+--------------------------------------------------------------------------------
+next.config.js:
+
+module.exports = {
+    async headers() {
+        return [
+            {
+                source: "/api/:path*",
+                headers: [
+                    { key: "Access-Control-Allow-Origin", value: process.env.APP_URL },
+                    { key: "Access-Control-Allow-Credentials", value: "true" },
+                ],
+            },
+        ];
+    },
+  };
+
+--------------------------------------------------------------------------------
+postcss.config.js:
+
+module.exports = {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  };
+
+--------------------------------------------------------------------------------
+dir_prompt.txt:
+
+
+
+--------------------------------------------------------------------------------
+styles/globals.css:
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+--------------------------------------------------------------------------------
+components/ui/alert-dialog.jsx:
+
+import * as React from "react"
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import { cn } from "@/lib/utils"
+
+const AlertDialog = AlertDialogPrimitive.Root
+const AlertDialogTrigger = AlertDialogPrimitive.Trigger
+const AlertDialogPortal = AlertDialogPrimitive.Portal
+
+const AlertDialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPrimitive.Overlay
+    className={cn(
+      "fixed inset-0 z-50 bg-black/80 animate-overlayShow",
+      className
+    )}
+    {...props}
+    ref={ref}
+  />
+))
+AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
+
+const AlertDialogContent = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPortal>
+    <AlertDialogOverlay />
+    <AlertDialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 animate-contentShow sm:rounded-lg",
+        className
+      )}
+      {...props}
+    />
+  </AlertDialogPortal>
+))
+AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
+
+const AlertDialogHeader = ({
+  className,
+  ...props
+}) => (
+  <div
+    className={cn(
+      "flex flex-col space-y-2 text-center sm:text-left",
+      className
+    )}
+    {...props}
+  />
+)
+AlertDialogHeader.displayName = "AlertDialogHeader"
+
+const AlertDialogFooter = ({
+  className,
+  ...props
+}) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      className
+    )}
+    {...props}
+  />
+)
+AlertDialogFooter.displayName = "AlertDialogFooter"
+
+const AlertDialogTitle = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPrimitive.Title
+    ref={ref}
+    className={cn("text-lg font-semibold", className)}
+    {...props}
+  />
+))
+AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
+
+const AlertDialogDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPrimitive.Description
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName
+
+const AlertDialogAction = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPrimitive.Action
+    ref={ref}
+    className={cn(
+      "inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+      className
+    )}
+    {...props}
+  />
+))
+AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
+
+const AlertDialogCancel = React.forwardRef(({ className, ...props }, ref) => (
+  <AlertDialogPrimitive.Cancel
+    ref={ref}
+    className={cn(
+      "inline-flex h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:mt-0",
+      className
+    )}
+    {...props}
+  />
+))
+AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
+
+export {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+}
+
+--------------------------------------------------------------------------------
+lib/db.js:
+
+// lib/db.js
+import mysql from 'mysql2/promise';
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+export default pool;
+
+--------------------------------------------------------------------------------
+lib/rateLimiter.js:
+
+const rateLimitMap = new Map(); // Shared Map for all routes
+
+
+function rateLimiter(namespace, identifier, maxRequests, timeWindow) {
+  const now = Date.now();
+  const key = `${namespace}:${identifier}`; // Create a unique key per namespace and user
+
+  // Get existing timestamps or initialize a new array
+  const requestTimestamps = rateLimitMap.get(key) || [];
+
+  // Filter out timestamps outside the time window
+  const validTimestamps = requestTimestamps.filter((timestamp) => now - timestamp < timeWindow);
+
+  // Check if the request exceeds the rate limit
+  if (validTimestamps.length >= maxRequests) {
+    return false; // Request not allowed
+  }
+
+  // Add the current timestamp and update the Map
+  validTimestamps.push(now);
+  rateLimitMap.set(key, validTimestamps);
+
+  return true; // Request allowed
+}
+
+export default rateLimiter;
+
+--------------------------------------------------------------------------------
+pages/new-entry.jsx:
+
+import React, { useState } from 'react';
+import { Trash2, Save } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+const NewEntry = () => {
+  const [entry, setEntry] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+  const handleDelete = () => {
+    setEntry('');
+    setShowDeleteDialog(false);
+  };
+
+  const handleSave = () => {
+    console.log('Entry saved:', entry);
+    // Here you would typically save to your backend
+    setShowSaveDialog(false);
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono relative">
+      {/* Floating buttons container */}
+      <div className="absolute top-4 right-4 flex space-x-4 z-10">
+        <button
+          onClick={() => entry.trim() && setShowDeleteDialog(true)}
+          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          disabled={!entry.trim()}
+        >
+          <Trash2 className="w-5 h-5 text-gray-400" />
+        </button>
+        <button
+          onClick={() => entry.trim() && setShowSaveDialog(true)}
+          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          disabled={!entry.trim()}
+        >
+          <Save className="w-5 h-5 text-gray-400" />
+        </button>
+      </div>
+
+      {/* Full-screen textarea */}
+      <textarea
+        value={entry}
+        onChange={(e) => setEntry(e.target.value)}
+        placeholder="start typing..."
+        className="w-full h-screen bg-gray-900 p-8 resize-none focus:outline-none"
+        autoFocus
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-300">delete entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              this action cannot be undone. this entry will be deleted forever.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-900 hover:bg-red-800 text-gray-300 border-red-800"
+              onClick={handleDelete}
+            >
+              delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Save Confirmation Dialog */}
+      <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-300">save entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              once saved, this entry cannot be modified. are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+              onClick={() => setShowSaveDialog(false)}
+            >
+              cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-green-900 hover:bg-green-800 text-gray-300 border-green-800"
+              onClick={handleSave}
+            >
+              save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default NewEntry;
+
+--------------------------------------------------------------------------------
+pages/entry.jsx:
+
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
+
+const EntryView = () => {
+  // Mock data - would come from props or API
+  const entry = {
+    date: "12/3/24",
+    content: "Today marks a significant change in my life. I accepted a new job offer and will be moving to a different city. It's both exciting and nerve-wracking to think about all the changes ahead. The company seems great, and the role aligns perfectly with where I want to take my career. Still, leaving behind friends and familiar places isn't easy. I'm trying to focus on the opportunities ahead rather than what I'm leaving behind."
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Header with back button and date */}
+        <div className="flex justify-between items-center mb-8">
+          <ArrowLeft className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer" />
+          <span className="text-gray-500">{entry.date}</span>
+        </div>
+
+        {/* Entry content */}
+        <div className="whitespace-pre-wrap leading-relaxed">
+          {entry.content}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EntryView;
+
+--------------------------------------------------------------------------------
+pages/_app.js:
+
+// pages/_app.js
+import { SessionProvider, useSession } from "next-auth/react";
+import '../styles/globals.css';
+
+export default function App({ Component, pageProps: { session, ...pageProps } }) {
+  console.log("SessionProvider initialized with session:", session);
+
+  return (
+    <SessionProvider session={session}>
+      <Component {...pageProps} />
+    </SessionProvider>
+  );
+}
+
+
+
+--------------------------------------------------------------------------------
+pages/analyze.jsx:
+
+import React, { useState, useRef } from 'react';
+import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
+const TypingAnimation = () => (
+  <div className="flex space-x-1.5 px-4 py-3">
+    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
+    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
+    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
+  </div>
+);
+
+const SuggestionButton = ({ icon: Icon, text, onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-center space-y-3 border border-gray-700"
+  >
+    <Icon className="w-6 h-6 text-gray-400" />
+    <span className="text-sm">{text}</span>
+  </button>
+);
+
+const Analyze = () => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingMessage, setTypingMessage] = useState('');
+  const messagesEndRef = useRef(null);
+  const isFirstCharacter = useRef(true);
+  
+  const suggestions = [
+    { icon: TrendingUp, text: "Analyze trends in my journal", response: "I'll analyze the patterns and trends in your journal entries. What specific aspects would you like me to focus on?" },
+    { icon: Sparkles, text: "Tell me something interesting about myself", response: "I'd be happy to explore your data and find interesting insights. What areas of your life would you like to learn more about?" },
+    { icon: Rocket, text: "Motivate me", response: "Let's look at your progress and achievements to help motivate you. Would you like to focus on recent wins or set new goals?" },
+    { icon: Smile, text: "Give me advice on how to be happier", response: "I can help identify patterns and suggest personalized strategies for increasing your happiness. Shall we start by looking at what activities correlate with your positive moments?" }
+  ];
+  
+  const typeMessage = async (message, delay = 30) => {
+    setIsTyping(true);
+    setTypingMessage('');
+    isFirstCharacter.current = true;
+    
+    let displayedMessage = '';
+    const chunkSize = 3;
+    
+    for (let i = 0; i < message.length; i += chunkSize) {
+      displayedMessage = message.slice(0, i + chunkSize);
+      setTypingMessage(displayedMessage);
+      
+      if (isFirstCharacter.current) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+        }, 50);
+        isFirstCharacter.current = false;
+      }
+      
+      await new Promise(resolve => requestAnimationFrame(() => {
+        setTimeout(resolve, delay);
+      }));
+    }
+    
+    setIsTyping(false);
+    setTypingMessage('');
+    setMessages(prev => [...prev, { type: 'bot', content: message }]);
+  };
+
+  const handleSend = async (messageText = input) => {
+    if (!messageText.trim()) return;
+    
+    const userMessage = messageText;
+    setInput('');
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.style.height = '44px';
+    }
+    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+    }, 50);
+    
+    // If the message matches a suggestion, use its response
+    const suggestion = suggestions.find(s => s.text === messageText);
+    const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
+    await typeMessage(response);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
+      {/* Floating Back Button */}
+     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900">
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+   
+
+      {/* Scrollable Messages Container */}
+      <div 
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        style={{ overscrollBehavior: 'contain' }}
+      >
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col justify-center">
+            <h2 className="text-center text-lg mb-8"></h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+              {suggestions.map((suggestion, index) => (
+                <SuggestionButton
+                  key={index}
+                  icon={suggestion.icon}
+                  text={suggestion.text}
+                  onClick={() => handleSend(suggestion.text)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex w-full ${message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'}`}
+              >
+                {message.type === 'bot' && (
+                  <div className="mt-2">
+                    <BookText className="w-5 h-5 text-gray-500" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${
+                    message.type === 'user'
+                      ? 'bg-gray-800'
+                      : 'bg-gray-800 border border-gray-700'
+                  }`}
+                >
+                  <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
+                    {message.content}
+                  </pre>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+        {isTyping && (
+          <div className="flex w-full justify-start items-start space-x-2">
+            <div className="mt-2">
+              <BookText className="w-5 h-5 text-gray-500" />
+            </div>
+            <div className="bg-gray-800 border border-gray-700 rounded">
+              {typingMessage ? (
+                <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
+                  {typingMessage}
+                </pre>
+              ) : (
+                <TypingAnimation />
+              )}
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t border-gray-800 p-4 bg-gray-900">
+        <div className="flex items-end space-x-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="ask about your journal..."
+            className="flex-1 bg-gray-800 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto"
+            style={{ height: '44px' }}
+            onInput={(e) => {
+              e.target.style.height = '44px';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={!input.trim()}
+            className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:hover:bg-gray-800"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Analyze;
+
+--------------------------------------------------------------------------------
+pages/index.jsx:
+
+import React, { useState } from 'react';
+import { Mail, Lock, User, ArrowRight, RefreshCw } from 'lucide-react';
+
+const Login = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreedToTerms: false
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!isLogin) {
+      // Signup validation
+      if (formData.password !== formData.confirmPassword) {
+        console.log('Passwords do not match');
+        return;
+      }
+      if (!formData.agreedToTerms) {
+        console.log('Must agree to terms and privacy policy');
+        return;
+      }
+    }
+    
+    console.log('Form submitted:', formData);
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+      <div className="max-w-md mx-auto space-y-8 pt-8">
+        {/* Header */}
+         <h1 className="text-2xl mb-10">
+         tiny journal
+        </h1>
+        <h1 className="text-2xl mb-12">
+          {isLogin ? 'Welcome back.' : 'Create your account.'}
+        </h1>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            {/* Username Input - Only shown in signup */}
+            {!isLogin && (
+              <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+                <User className="w-5 h-5 text-gray-500" />
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="bg-transparent w-full focus:outline-none placeholder-gray-500"
+                  required={!isLogin}
+                />
+              </div>
+            )}
+
+            {/* Email Input */}
+            <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+              <Mail className="w-5 h-5 text-gray-500" />
+              <input
+                type="email"
+                name="email"
+                placeholder="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="bg-transparent w-full focus:outline-none placeholder-gray-500"
+                required
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+              <Lock className="w-5 h-5 text-gray-500" />
+              <input
+                type="password"
+                name="password"
+                placeholder="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="bg-transparent w-full focus:outline-none placeholder-gray-500"
+                required
+              />
+            </div>
+
+            {/* Confirm Password Input - Only shown in signup */}
+            {!isLogin && (
+              <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+                <RefreshCw className="w-5 h-5 text-gray-500" />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="confirm password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="bg-transparent w-full focus:outline-none placeholder-gray-500"
+                  required={!isLogin}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Password Match Indicator - Only shown in signup */}
+          {!isLogin && formData.password && formData.confirmPassword && (
+            <div className="text-sm">
+              {formData.password === formData.confirmPassword ? (
+                <span className="text-green-400">passwords match</span>
+              ) : (
+                <span className="text-red-400">passwords do not match</span>
+              )}
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-gray-800 p-4 rounded flex items-center justify-between hover:bg-gray-700 transition-colors"
+          >
+            <span>{isLogin ? 'login' : 'create account'}</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+
+          {/* Google Login/Signup */}
+          <button
+            type="button"
+            className="w-full bg-gray-800 p-4 rounded flex items-center justify-between hover:bg-gray-700 transition-colors"
+            onClick={() => console.log('Google auth clicked')}
+          >
+            <div className="flex items-center space-x-3">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              <span>{isLogin ? 'continue with google' : 'sign up with google'}</span>
+            </div>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </form>
+
+        {/* Terms and Privacy Checkbox - Only shown in signup */}
+        {!isLogin && (
+          <div className="flex items-start space-x-3 text-sm text-gray-500">
+            <input
+              type="checkbox"
+              name="agreedToTerms"
+              checked={formData.agreedToTerms}
+              onChange={(e) => handleChange({ target: { name: 'agreedToTerms', value: e.target.checked } })}
+              className="mt-1 bg-gray-800 border-gray-700 rounded focus:ring-0 focus:ring-offset-0 cursor-pointer"
+              required={!isLogin}
+            />
+            <label className="cursor-pointer">
+              I agree to the
+              <button type="button" className="text-gray-400 hover:text-gray-300 mx-1">terms of service</button>
+              and
+              <button type="button" className="text-gray-400 hover:text-gray-300 mx-1">privacy policy</button>
+            </label>
+          </div>
+        )}
+
+        {/* Toggle Login/Signup */}
+        <button
+          onClick={() => {
+            setIsLogin(!isLogin);
+            setFormData({
+              username: '',
+              email: '',
+              password: '',
+              confirmPassword: '',
+              agreedToTerms: false
+            });
+          }}
+          className="text-gray-500 hover:text-gray-300 transition-colors text-sm"
+        >
+          {isLogin ? 'need an account? sign up' : 'already have an account? login'}
+        </button>
+
+
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
+--------------------------------------------------------------------------------
+pages/home.jsx:
+
+
+
+--------------------------------------------------------------------------------
+pages/account.jsx:
+
+import React, { useState } from 'react';
+import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
+import { useRouter } from "next/router";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction
+} from "@/components/ui/alert-dialog";
+
+const Account = () => {
+    const router = useRouter();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  // Mock user data - would come from your auth context/API
+  const user = {
+    email: "scott@example.com",
+    currentPlan: "free",
+    aiCreditsUsed: 42,
+    aiCreditsTotal: 50
+  };
+
+  const plans = [
+    {
+      name: "free",
+      price: "$0/month",
+      features: [
+        "Unlimited journal entries",
+        "Basic AI analysis",
+        "Limited analysis interactions",
+      ],
+      current: user.currentPlan === "free"
+    },
+    {
+      name: "premium",
+      price: "$7/month",
+      features: [
+        "Unlimited journal entries",
+        "Advanced AI analysis",
+        "Increased analysis interactions",
+      ],
+      current: user.currentPlan === "premium"
+    }
+  ];
+
+  const handleLogout = () => {
+    // Handle logout logic here
+    console.log('Logging out...');
+    setShowLogoutDialog(false);
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Header */}
+        <h1 className="text-2xl mb-8 flex items-center space-x-3">
+   <ArrowLeft className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer" onClick={() => router.push("/")} />
+          
+          <span>Account</span>
+        </h1>
+
+        {/* Account Info Section */}
+        <div className="space-y-6">
+          <h2 className="text-lg text-gray-400">profile</h2>
+          <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+            <Mail className="w-5 h-5 text-gray-500" />
+            <span>{user.email}</span>
+          </div>
+        </div>
+
+        {/* Subscription Plans */}
+        <div className="space-y-6">
+          <h2 className="text-lg text-gray-400">subscription</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {plans.map((plan) => (
+              <div
+                key={plan.name}
+                className={`bg-gray-800 p-6 rounded-lg border ${
+                  plan.current ? 'border-blue-500' : 'border-gray-700'
+                } space-y-4`}
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg capitalize">{plan.name}</h3>
+                  {plan.current && (
+                    <span className="text-sm text-blue-400">current plan</span>
+                  )}
+                </div>
+                <div className="text-2xl font-bold">{plan.price}</div>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-400">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                {!plan.current && (
+                  <button className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors">
+                    <span>{plan.name === "free" ? "downgrade" : "upgrade"}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Logout Button */}
+        <div className="pt-8">
+          <button 
+            onClick={() => setShowLogoutDialog(true)}
+            className="w-full bg-gray-800 p-4 rounded flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-300">confirm logout</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              are you sure you want to logout of your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+              onClick={() => setShowLogoutDialog(false)}
+            >
+              cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-gray-700 hover:bg-gray-600 text-gray-300"
+              onClick={handleLogout}
+            >
+              logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default Account;
+
+--------------------------------------------------------------------------------
+pages/api/auth/[...nextauth].js:
+
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import pool from "../../../lib/db";
+
+export default NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: "openid profile email",
+        },
+      },
+    }),
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 60, // 30 minutes
+    updateAge: 10 * 60, // Update session token every 10 minutes
+  },
+  cookies: {
+    sessionToken: {
+      name: "__Secure-next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "none", // Cross-origin cookies
+        secure: process.env.NODE_ENV === "production", // Only secure cookies in production
+        path: "/", // Accessible throughout the app
+      },
+    },
+  },
+  callbacks: {
+    async signIn({ user }) {
+      console.log("SignIn Callback Triggered for User:", user);
+
+      try {
+        // Check if user exists in the database
+        const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [user.email]);
+
+        if (rows.length === 0) {
+          console.log(`New user detected: ${user.email}`);
+
+          // Add user to the `users` table
+          await pool.query(
+            `
+            INSERT INTO users (email, password, confirmed, listenCount, samplesHeard, sampleQueue, vibe)
+            VALUES (?, "googleSignIn", true, 0, '[]', '[]', '')
+            `,
+            [user.email]
+          );
+
+          console.log(`User ${user.email} added to the database`);
+
+        } else {
+          console.log(`User ${user.email} already exists in the database`);
+        }
+
+        return true; // Allow sign-in
+      } catch (error) {
+        console.error("Error during sign-in callback:", error);
+        return false; // Deny sign-in
+      }
+    },
+
+    async jwt({ token, account, user }) {
+      console.log("JWT Callback Triggered");
+      console.log("Before JWT Update:", { token, account, user });
+
+      if (account) {
+        // Store account details during initial sign-in
+        token.accessToken = account.access_token;
+        token.accessTokenExpires = Date.now() + 30 * 60 * 1000; // 30-minute expiration
+        if (user) {
+          token.email = user.email;
+        }
+      }
+
+      // Check if the token has expired
+      if (Date.now() > token.accessTokenExpires) {
+        console.log("JWT Callback: Access token expired");
+        return null; // Return null if expired
+      }
+
+      console.log("After JWT Update:", token);
+      return token;
+    },
+
+    async session({ session, token }) {
+      console.log("Session Callback Triggered");
+      console.log("Before Session Update:", { session, token });
+
+      if (!token) {
+        console.log("Session Callback: Token invalid or expired");
+        session.error = "SessionExpired";
+        return null; // No session if token is invalid
+      }
+
+      session.user = {
+        email: token.email,
+      };
+      session.accessToken = token.accessToken;
+
+      console.log("After Session Update:", session);
+      return session;
+    },
+  },
+  debug: true, // Enable detailed logs for troubleshooting
+});
+
+--------------------------------------------------------------------------------
