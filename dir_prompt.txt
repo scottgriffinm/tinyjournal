@@ -463,194 +463,198 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
 const TypingAnimation = () => (
-  <div className="flex space-x-1.5 px-4 py-3">
-    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
-    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
-    <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
-  </div>
+    <div className="flex space-x-1.5 px-4 py-3">
+        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
+        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
+        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
+    </div>
 );
 
 const SuggestionButton = ({ icon: Icon, text, onClick }) => (
-  <button
-    onClick={onClick}
-    className="flex flex-col items-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-center space-y-3 border border-gray-700"
-  >
-    <Icon className="w-6 h-6 text-gray-400" />
-    <span className="text-sm">{text}</span>
-  </button>
+    <button
+        onClick={onClick}
+        className="flex flex-col items-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-center space-y-3 border border-gray-700"
+    >
+        <Icon className="w-6 h-6 text-gray-400" />
+        <span className="text-sm">{text}</span>
+    </button>
 );
 
 const Analyze = () => {
     const router = useRouter();
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingMessage, setTypingMessage] = useState('');
-  const messagesEndRef = useRef(null);
-  const isFirstCharacter = useRef(true);
-  
-  const suggestions = [
-    { icon: TrendingUp, text: "Analyze trends in my journal", response: "I'll analyze the patterns and trends in your journal entries. What specific aspects would you like me to focus on?" },
-    { icon: Sparkles, text: "Tell me something interesting about myself", response: "I'd be happy to explore your data and find interesting insights. What areas of your life would you like to learn more about?" },
-    { icon: Rocket, text: "Motivate me", response: "Let's look at your progress and achievements to help motivate you. Would you like to focus on recent wins or set new goals?" },
-    { icon: Smile, text: "Give me advice on how to be happier", response: "I can help identify patterns and suggest personalized strategies for increasing your happiness. Shall we start by looking at what activities correlate with your positive moments?" }
-  ];
-  
-  const typeMessage = async (message, delay = 30) => {
-    setIsTyping(true);
-    setTypingMessage('');
-    isFirstCharacter.current = true;
-    
-    let displayedMessage = '';
-    const chunkSize = 3;
-    
-    for (let i = 0; i < message.length; i += chunkSize) {
-      displayedMessage = message.slice(0, i + chunkSize);
-      setTypingMessage(displayedMessage);
-      
-      if (isFirstCharacter.current) {
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingMessage, setTypingMessage] = useState('');
+    const messagesEndRef = useRef(null);
+    const isFirstCharacter = useRef(true);
+
+    const suggestions = [
+        { icon: TrendingUp, text: "Analyze trends in my journal", response: "I'll analyze the patterns and trends in your journal entries. What specific aspects would you like me to focus on?" },
+        { icon: Sparkles, text: "Tell me something interesting about myself", response: "I'd be happy to explore your data and find interesting insights. What areas of your life would you like to learn more about?" },
+        { icon: Rocket, text: "Motivate me", response: "Let's look at your progress and achievements to help motivate you. Would you like to focus on recent wins or set new goals?" },
+        { icon: Smile, text: "Give me advice on how to be happier", response: "I can help identify patterns and suggest personalized strategies for increasing your happiness. Shall we start by looking at what activities correlate with your positive moments?" }
+    ];
+
+    const typeMessage = async (message, delay = 30) => {
+        setIsTyping(true);
+        setTypingMessage('');
+        isFirstCharacter.current = true;
+
+        let displayedMessage = '';
+        const chunkSize = 3;
+
+        for (let i = 0; i < message.length; i += chunkSize) {
+            displayedMessage = message.slice(0, i + chunkSize);
+            setTypingMessage(displayedMessage);
+
+            if (isFirstCharacter.current) {
+                setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+                }, 50);
+                isFirstCharacter.current = false;
+            }
+
+            await new Promise(resolve => requestAnimationFrame(() => {
+                setTimeout(resolve, delay);
+            }));
+        }
+
+        setIsTyping(false);
+        setTypingMessage('');
+        setMessages(prev => [...prev, { type: 'bot', content: message }]);
+    };
+
+    const handleSend = async (messageText = input) => {
+        if (!messageText.trim()) return;
+
+        const userMessage = messageText;
+        setInput('');
+        const textarea = document.querySelector('textarea');
+        if (textarea) {
+            textarea.style.height = '44px';
+        }
+        setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
         }, 50);
-        isFirstCharacter.current = false;
-      }
-      
-      await new Promise(resolve => requestAnimationFrame(() => {
-        setTimeout(resolve, delay);
-      }));
-    }
-    
-    setIsTyping(false);
-    setTypingMessage('');
-    setMessages(prev => [...prev, { type: 'bot', content: message }]);
-  };
 
-  const handleSend = async (messageText = input) => {
-    if (!messageText.trim()) return;
-    
-    const userMessage = messageText;
-    setInput('');
-    const textarea = document.querySelector('textarea');
-    if (textarea) {
-      textarea.style.height = '44px';
-    }
-    setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
-    }, 50);
-    
-    // If the message matches a suggestion, use its response
-    const suggestion = suggestions.find(s => s.text === messageText);
-    const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
-    await typeMessage(response);
-  };
+        // If the message matches a suggestion, use its response
+        const suggestion = suggestions.find(s => s.text === messageText);
+        const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
+        await typeMessage(response);
+    };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
 
-  return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
-      {/* Floating Back Button */}
-     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-   
+    return (
+        <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
+            {/* Floating Back Button */}
+            <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
+                <ArrowLeft className="w-5 h-5" />
+            </button>
 
-      {/* Scrollable Messages Container */}
-      <div 
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-        style={{ overscrollBehavior: 'contain' }}
-      >
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col justify-center">
-            <h2 className="text-center text-lg mb-8"></h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
-              {suggestions.map((suggestion, index) => (
-                <SuggestionButton
-                  key={index}
-                  icon={suggestion.icon}
-                  text={suggestion.text}
-                  onClick={() => handleSend(suggestion.text)}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex w-full ${message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'}`}
-              >
-                {message.type === 'bot' && (
-                  <div className="mt-2">
-                    <BookText className="w-5 h-5 text-gray-500" />
-                  </div>
+
+            {/* Scrollable Messages Container */}
+            <div
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+                style={{ overscrollBehavior: 'contain' }}
+            >
+                {messages.length === 0 ? (
+                    <div className="h-full flex flex-col justify-center">
+                        <h2 className="text-center text-lg mb-8"></h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+                            {suggestions.map((suggestion, index) => (
+                                <SuggestionButton
+                                    key={index}
+                                    icon={suggestion.icon}
+                                    text={suggestion.text}
+                                    onClick={() => handleSend(suggestion.text)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {messages.map((message, index) => (
+                            <div
+                                key={index}
+                                className={`flex w-full ${message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'}`}
+                            >
+                                {message.type === 'bot' && (
+                                    <div className="mt-2">
+                                        <BookText className="w-5 h-5 text-gray-500" />
+                                    </div>
+                                )}
+                                <div
+                                    className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${message.type === 'user'
+                                            ? 'bg-gray-800'
+                                            : 'bg-gray-800 border border-gray-700'
+                                        }`}
+                                >
+                                    <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
+                                        {message.content}
+                                    </pre>
+                                </div>
+                            </div>
+                        ))}
+                    </>
                 )}
-                <div
-                  className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${
-                    message.type === 'user'
-                      ? 'bg-gray-800'
-                      : 'bg-gray-800 border border-gray-700'
-                  }`}
-                >
-                  <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
-                    {message.content}
-                  </pre>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-        {isTyping && (
-          <div className="flex w-full justify-start items-start space-x-2">
-            <div className="mt-2">
-              <BookText className="w-5 h-5 text-gray-500" />
+                {isTyping && (
+                    <div className="flex w-full justify-start items-start space-x-2">
+                        <div className="mt-2">
+                            <BookText className="w-5 h-5 text-gray-500" />
+                        </div>
+                        <div className="bg-gray-800 border border-gray-700 rounded">
+                            {typingMessage ? (
+                                <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
+                                    {typingMessage}
+                                </pre>
+                            ) : (
+                                <TypingAnimation />
+                            )}
+                        </div>
+                    </div>
+                )}
+                <div ref={messagesEndRef} />
             </div>
-            <div className="bg-gray-800 border border-gray-700 rounded">
-              {typingMessage ? (
-                <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
-                  {typingMessage}
-                </pre>
-              ) : (
-                <TypingAnimation />
-              )}
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-800 p-4 bg-gray-900">
-        <div className="flex items-end space-x-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="ask about your journal..."
-            className="flex-1 bg-gray-800 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto"
-            style={{ height: '44px' }}
-            onInput={(e) => {
-              e.target.style.height = '44px';
-              e.target.style.height = `${e.target.scrollHeight}px`;
-            }}
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim()}
-            className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:hover:bg-gray-800"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </button>
+            {/* Input Area */}
+            <div className="border-t border-gray-800 p-4 bg-gray-900">
+                <div className="flex items-end space-x-2">
+                    <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="ask about your journal..."
+                        className="flex-1 bg-gray-800 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto"
+                        style={{
+                            lineHeight: '20px', // Set a consistent line-height
+                            height: '44px',     // Initial height
+                            minHeight: '44px',  // Match the height for empty state
+                        }}
+                        onInput={(e) => {
+                            const textarea = e.target;
+                            textarea.style.height = '44px'; // Reset height to minimum
+                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`; // Adjust dynamically
+                        }}
+                    />
+                    <button
+                        onClick={() => handleSend()}
+                        disabled={!input.trim()}
+                        className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:hover:bg-gray-800"
+                    >
+                        <ArrowUp className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Analyze;
@@ -746,159 +750,474 @@ export default Home;
 --------------------------------------------------------------------------------
 pages/account.jsx:
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
 import { useRouter } from "next/router";
+import { signOut } from "next-auth/react";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction
 } from "../components/ui/alert-dialog";
 
-const Account = () => {
+const Account = ({ userEmail }) => {
     const router = useRouter();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [loading, setLoading] = useState(true); // New loading state
+    const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [subscription, setSubscription] = useState({
+        tier: "free",
+        expiryDate: null,
+        isRenewing: false,
+    });
 
-  // Mock user data - would come from your auth context/API
-  const user = {
-    email: "scott@example.com",
-    currentPlan: "free",
-    aiCreditsUsed: 42,
-    aiCreditsTotal: 50
-  };
+    const plans = [
+        {
+            name: "free",
+            price: "$0/month",
+            features: [
+                "Unlimited journal entries",
+                "Basic AI analysis",
+                "Limited analysis requests",
+            ],
+            current: subscription.tier === "free",
+        },
+        {
+            name: "plus",
+            price: "$5/month",
+            features: [
+                "Unlimited journal entries",
+                "Advanced AI analysis",
+                "Increased analysis requests",
+            ],
+            current: subscription.tier === "plus",
+        },
+    ];
 
-  const plans = [
-    {
-      name: "free",
-      price: "$0/month",
-      features: [
-        "Unlimited journal entries",
-        "Basic AI analysis",
-        "Limited analysis interactions",
-      ],
-      current: user.currentPlan === "free"
-    },
-    {
-      name: "plus",
-      price: "$7/month",
-      features: [
-        "Unlimited journal entries",
-        "Advanced AI analysis",
-        "Increased analysis interactions",
-      ],
-      current: user.currentPlan === "plus"
-    }
-  ];
+    useEffect(() => {
+        const fetchSubscriptionStatus = async () => {
+            try {
+                const response = await fetch("/api/get-subscription-status");
+                const data = await response.json();
+                if (response.ok) {
+                    setSubscription({
+                        tier: data.tier || "free",
+                        expiryDate: data.expiryDate || null,
+                        isRenewing: data.isRenewing || false,
+                    });
+                } else {
+                    console.error("Failed to fetch subscription status:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching subscription status:", error);
+            } finally {
+                setLoading(false); // Data has been fetched
+            }
+        };
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    console.log('Logging out...');
-    setShowLogoutDialog(false);
-  };
+        fetchSubscriptionStatus();
+    }, []);
 
-  return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
-      <div className="max-w-2xl mx-auto space-y-8">
-        {/* Header */}
-        <h1 className="text-2xl mb-8 flex items-center space-x-3">
-   <ArrowLeft className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer" onClick={() => router.push("/")} />
-          
-          <span>Account</span>
-        </h1>
+    const handleUpgrade = async () => {
+        try {
+            const response = await fetch("/api/switch-tier", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "upgrade" }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                window.location.href = data.url; // Redirect to Stripe checkout
+            } else {
+                console.error("Failed to upgrade:", data.error);
+            }
+        } catch (error) {
+            console.error("Error upgrading to plus tier:", error);
+        }
+    };
 
-        {/* Account Info Section */}
-        <div className="space-y-6">
-          <h2 className="text-lg text-gray-400">profile</h2>
-          <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
-            <Mail className="w-5 h-5 text-gray-500" />
-            <span>{user.email}</span>
-          </div>
-        </div>
+    const handleCancelRenewal = async () => {
+        try {
+            const response = await fetch("/api/switch-tier", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "cancel-renewal" }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setSubscription({
+                    ...subscription,
+                    isRenewing: false, // Indicate that auto-renewal is canceled
+                });
+                setShowDowngradeDialog(false);
+            } else {
+                console.error("Failed to cancel renewal:", data.error);
+            }
+        } catch (error) {
+            console.error("Error canceling subscription renewal:", error);
+        }
+    };
 
-        {/* Subscription Plans */}
-        <div className="space-y-6">
-          <h2 className="text-lg text-gray-400">subscription</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`bg-gray-800 p-6 rounded-lg border ${
-                  plan.current ? 'border-blue-500' : 'border-gray-700'
-                } space-y-4`}
-              >
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg capitalize">{plan.name}</h3>
-                  {plan.current && (
-                    <span className="text-sm text-blue-400">current plan</span>
-                  )}
+    const handleLogout = () => {
+        console.log('Logging out...');
+        setShowLogoutDialog(false);
+        signOut({ callbackUrl: "/login" }); // Log out and redirect to the home page
+    };
+
+    return (
+        <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+            <div className="max-w-2xl mx-auto space-y-8">
+                {/* Header */}
+                <h1 className="text-2xl mb-8 flex items-center space-x-3">
+                    <ArrowLeft
+                        className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer"
+                        onClick={() => router.push("/")}
+                    />
+                    <span>Account</span>
+                </h1>
+
+                {/* Account Info Section */}
+                <div className="space-y-6">
+                    <h2 className="text-lg text-gray-400">profile</h2>
+                    <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
+                        <Mail className="w-5 h-5 text-gray-500" />
+                        <span>{userEmail || "Loading..."}</span>
+                    </div>
                 </div>
-                <div className="text-2xl font-bold">{plan.price}</div>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center space-x-2">
-                      <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm text-gray-400">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                {!plan.current && (
-                  <button className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors">
-                    <span>{plan.name === "free" ? "downgrade" : "upgrade"}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Logout Button */}
-        <div className="pt-8">
-          <button 
-            onClick={() => setShowLogoutDialog(true)}
-            className="w-full bg-gray-800 p-4 rounded flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>logout</span>
-          </button>
-        </div>
-      </div>
+                {/* Subscription Info Section */}
+                <div className="space-y-6">
+                    <h2 className="text-lg text-gray-400">subscription</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {loading ? (
+                            <div className="text-center text-gray-400 col-span-2">Loading plans...</div>
+                        ) : (
+                            plans.map((plan) => (
+                                <div
+                                    key={plan.name}
+                                    className={`bg-gray-800 p-6 rounded-lg border ${plan.current ? 'border-blue-500' : 'border-gray-700'
+                                        } space-y-4`}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg capitalize">{plan.name}</h3>
+                                        {plan.current && (
+                                            <span className="text-sm text-blue-400">current plan</span>
+                                        )}
+                                    </div>
+                                    <div className="text-2xl font-bold">{plan.price}</div>
+                                    <ul className="space-y-3">
+                                        {plan.features.map((feature, index) => (
+                                            <li key={index} className="flex items-center space-x-2">
+                                                <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                                <span className="text-sm text-gray-400">{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {plan.name === "plus" && subscription.tier === "plus" && subscription.expiryDate && (
+                                        <div className="mt-4 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-gray-400">
+                                                    {subscription.isRenewing ? "Renewal Date:" : "Expiry Date:"}
+                                                </span>
+                                                <span>{new Date(subscription.expiryDate).toLocaleDateString()}</span>
+                                            </div>
+                                            {subscription.isRenewing && (
+                                                <button
+                                                    className="w-full bg-gray-700 p-3 rounded mt-2 hover:bg-gray-600 transition-colors"
+                                                    onClick={() => setShowDowngradeDialog(true)}
+                                                >
+                                                    Cancel Subscription
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                    {!plan.current && plan.name === "plus" && (
+                                        <button
+                                            className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors"
+                                            onClick={handleUpgrade}
+                                        >
+                                            <span>Upgrade</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
 
-      {/* Logout Confirmation Dialog */}
-      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-300">confirm logout</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
-              are you sure you want to logout of your account?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel 
-              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
-              onClick={() => setShowLogoutDialog(false)}
-            >
-              cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-gray-700 hover:bg-gray-600 text-gray-300"
-              onClick={handleLogout}
-            >
-              logout
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
+                </div>
+
+                {/* Logout Button */}
+                <div className="pt-8">
+                    <button
+                        onClick={() => setShowLogoutDialog(true)}
+                        className="w-full bg-gray-800 p-4 rounded flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span>logout</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Cancel Renewal Confirmation Dialog */}
+            <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+                <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-gray-300">Cancel Subscription Renewal</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                            Are you sure you want to cancel the renewal of your subscription? You will keep your benefits until the end of your subscription period.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+                            onClick={() => setShowDowngradeDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-700 hover:bg-red-600 text-gray-300"
+                            onClick={handleCancelRenewal}
+                        >
+                            Confirm
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Logout Confirmation Dialog */}
+            <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+                <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-gray-300">confirm logout</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                            are you sure you want to logout of your account?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+                            onClick={() => setShowLogoutDialog(false)}
+                        >
+                            cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-gray-700 hover:bg-gray-600 text-gray-300"
+                            onClick={handleLogout}
+                        >
+                            logout
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+    );
 };
 
+export async function getServerSideProps(context) {
+    const { getSession } = await import("next-auth/react");
+    const session = await getSession(context);
+
+    if (!session) {
+        return {
+            redirect: {
+                destination: "/login",
+                permanent: false,
+            },
+        };
+    }
+
+    return {
+        props: {
+            userEmail: session.user.email,
+        },
+    };
+}
+
 export default Account;
+
+--------------------------------------------------------------------------------
+pages/api/get-subscription-status.js:
+
+import { getToken } from "next-auth/jwt";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const PRODUCT_ID = process.env.STRIPE_SUBSCRIPTION_PRODUCT_ID;
+
+export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const customers = await stripe.customers.list({ email: token.email });
+
+    if (customers.data.length === 0) {
+      // No Stripe customer exists
+      return res.status(200).json({ tier: "free", expiryDate: null });
+    }
+
+    const customer = customers.data[0];
+    var subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "active",
+    });
+
+    if (subscriptions.data.length === 0) {
+      // No active subscription exists
+      return res.status(200).json({ tier: "free", expiryDate: null });
+    }
+
+    // Filter subscriptions by the specific product ID
+    const subscription = subscriptions.data.find(sub =>
+      sub.items.data.some(item => item.price.product === PRODUCT_ID)
+    );
+
+    if (!subscription) {
+      // No subscription with the specific product ID exists
+      return res.status(200).json({ tier: "free", expiryDate: null });
+    }
+
+    // user has plus subscription
+    const tier = "plus";
+    const expiryDate = new Date(subscription.current_period_end * 1000).toISOString();
+    const isRenewing = !subscription.cancel_at_period_end; // Determine if subscription auto-renews
+
+    res.status(200).json({ tier, expiryDate, isRenewing, subscriptionId: subscription.id });
+  } catch (error) {
+    console.error("Error fetching subscription status:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+--------------------------------------------------------------------------------
+pages/api/switch-tier.js:
+
+import { getToken } from "next-auth/jwt";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const PRODUCT_ID = process.env.STRIPE_SUBSCRIPTION_PRODUCT_ID;
+const PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID; // Ensure this matches your Stripe Price ID
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { action } = req.body;
+    if (!action || (action !== "upgrade" && action !== "cancel-renewal")) {
+      return res.status(400).json({ error: "Invalid action specified" });
+    }
+
+    const customers = await stripe.customers.list({ email: token.email });
+
+    if (customers.data.length === 0) {
+      if (action === "cancel-renewal") {
+        return res
+          .status(400)
+          .json({ error: "You do not have a paid subscription to cancel." });
+      }
+
+      // Create a new customer if upgrading
+      const customer = await stripe.customers.create({
+        email: token.email,
+      });
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [
+          {
+            price: PRICE_ID, // Replace with your Stripe Price ID
+            quantity: 1,
+          },
+        ],
+        customer: customer.id,
+        success_url: `${process.env.NEXTAUTH_URL}/account`,
+        cancel_url: `${process.env.NEXTAUTH_URL}/account`,
+      });
+
+      return res.status(200).json({ url: session.url });
+    }
+
+    const customer = customers.data[0];
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "active",
+    });
+
+    if (action === "upgrade") {
+      const hasProduct = subscriptions.data.some(sub =>
+        sub.items.data.some(item => item.price.product === PRODUCT_ID)
+      );
+
+      if (hasProduct) {
+        return res.status(400).json({ error: "You already have the paid tier." });
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [
+          {
+            price: PRICE_ID, // Replace with your Stripe Price ID
+            quantity: 1,
+          },
+        ],
+        customer: customer.id,
+        success_url: `${process.env.NEXTAUTH_URL}/account`,
+        cancel_url: `${process.env.NEXTAUTH_URL}/account`,
+      });
+
+      return res.status(200).json({ url: session.url });
+    }
+
+    if (action === "cancel-renewal") {
+      const subscription = subscriptions.data.find(sub =>
+        sub.items.data.some(item => item.price.product === PRODUCT_ID)
+      );
+
+      if (!subscription) {
+        return res
+          .status(400)
+          .json({ error: "You do not have a paid subscription to cancel." });
+      }
+
+      // Set subscription to cancel at the end of the billing period
+      await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true,
+      });
+
+      return res.status(200).json({
+        message: "Your subscription renewal has been canceled. You will retain benefits until the subscription ends.",
+      });
+    }
+  } catch (error) {
+    console.error("Error in switch-tier handler:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
 
 --------------------------------------------------------------------------------
 pages/api/auth/[...nextauth].js:
@@ -974,7 +1293,7 @@ export default NextAuth({
     async redirect({ url, baseUrl }) {
       // Redirect to the home page after login
       if (url.startsWith(baseUrl)) {
-        return `${baseUrl}/home`;
+        return `${baseUrl}/`;
       } else if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
       }
