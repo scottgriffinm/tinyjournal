@@ -1,17 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const Home = () => {
   const router = useRouter();
+  const [entries, setEntries] = useState([]);
 
-  const feedItems = [
-    {
-      date: "12/3/24",
-      content: "New job, moving",
-      emoji: "😎",
-    },
-  ];
+  useEffect(() => {
+    const fetchEntries = async () => {
+      const res = await fetch('/api/get-entries');
+      const data = await res.json();
+      if (res.ok) {
+        setEntries(data.entries);
+      } else {
+        console.error('Error fetching entries:', data.error);
+      }
+    };
+
+    fetchEntries();
+  }, []);
 
   return (
     <div className="bg-gray-900 p-6 min-h-screen text-gray-300 font-mono">
@@ -45,16 +52,16 @@ const Home = () => {
 
         {/* Feed Items */}
         <div className="space-y-2 mt-8">
-          {feedItems.map((item, index) => (
+        {entries.map((entry) => (
             <div
-              key={index}
-              className="bg-gray-800 p-3 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
+              key={entry.id}
+              className="bg-gray-800 p-3 rounded flex justify-between items-center cursor-pointer hover:bg-gray-700 transition-colors"
+              onClick={() => router.push(`/entry?id=${entry.id}`)}
             >
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">{item.date}</span>
-                <span>{item.content}</span>
+                <span className="text-sm text-gray-500">{entry.formattedDate}</span>
+                <span>{entry.shortSummary}</span>
               </div>
-              <span className="text-xl">{item.emoji}</span>
             </div>
           ))}
         </div>

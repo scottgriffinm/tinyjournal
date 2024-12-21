@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from "next/router";
 import { Trash2, Save } from 'lucide-react';
 import {
   AlertDialog,
@@ -12,6 +13,7 @@ import {
 } from '../components/ui/alert-dialog';
 
 const NewEntry = () => {
+  const router = useRouter();
   const [entry, setEntry] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -19,12 +21,32 @@ const NewEntry = () => {
   const handleDelete = () => {
     setEntry('');
     setShowDeleteDialog(false);
+    router.push("/")
   };
 
-  const handleSave = () => {
-    console.log('Entry saved:', entry);
-    // Here you would typically save to your backend
-    setShowSaveDialog(false);
+  const handleSave = async () => {
+    const shortSummary = entry.slice(0, 10);
+    const longSummary = entry.slice(0, 20);
+
+    try {
+      const response = await fetch('/api/create-entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: entry, shortSummary, longSummary }),
+      });
+
+      if (response.ok) {
+        console.log('Entry successfully saved!');
+        setEntry('');
+        setShowSaveDialog(false);
+        router.push("/")
+      } else {
+        const errorData = await response.json();
+        console.error('Error saving entry:', errorData.error);
+      }
+    } catch (error) {
+      console.error('Error saving entry:', error);
+    }
   };
 
   return (
@@ -66,7 +88,7 @@ const NewEntry = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
+            <AlertDialogCancel
               className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
               onClick={() => setShowDeleteDialog(false)}
             >
@@ -92,7 +114,7 @@ const NewEntry = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
+            <AlertDialogCancel
               className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
               onClick={() => setShowSaveDialog(false)}
             >
@@ -113,22 +135,21 @@ const NewEntry = () => {
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {
-    const { getSession } = await import("next-auth/react");
-    const session = await getSession(context);
+  const { getSession } = await import('next-auth/react');
+  const session = await getSession(context);
 
-    if (!session) {
-        return {
-            redirect: {
-                destination: "/login",
-                permanent: false,
-            },
-        };
-    }
-
+  if (!session) {
     return {
-        props: {
-        },
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
     };
+  }
+
+  return {
+    props: {},
+  };
 }
 
 export default NewEntry;
