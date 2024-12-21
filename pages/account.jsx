@@ -15,8 +15,9 @@ import {
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
-    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [loading, setLoading] = useState(true); // New loading state
     const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [subscription, setSubscription] = useState({
         tier: "free",
         expiryDate: null,
@@ -62,6 +63,8 @@ const Account = ({ userEmail }) => {
                 }
             } catch (error) {
                 console.error("Error fetching subscription status:", error);
+            } finally {
+                setLoading(false); // Data has been fetched
             }
         };
 
@@ -139,56 +142,60 @@ const Account = ({ userEmail }) => {
                 <div className="space-y-6">
                     <h2 className="text-lg text-gray-400">subscription</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {plans.map((plan) => (
-                            <div
-                                key={plan.name}
-                                className={`bg-gray-800 p-6 rounded-lg border ${plan.current ? 'border-blue-500' : 'border-gray-700'
-                                    } space-y-4`}
-                            >
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg capitalize">{plan.name}</h3>
-                                    {plan.current && (
-                                        <span className="text-sm text-blue-400">current plan</span>
-                                    )}
-                                </div>
-                                <div className="text-2xl font-bold">{plan.price}</div>
-                                <ul className="space-y-3">
-                                    {plan.features.map((feature, index) => (
-                                        <li key={index} className="flex items-center space-x-2">
-                                            <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                            <span className="text-sm text-gray-400">{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                {plan.name === "plus" && subscription.tier === "plus" && subscription.expiryDate && (
-                                    <div className="mt-4 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-gray-400">
-                                                {subscription.isRenewing ? "Renewal Date:" : "Expiry Date:"}
-                                            </span>
-                                            <span>{new Date(subscription.expiryDate).toLocaleDateString()}</span>
-                                        </div>
-                                        {subscription.isRenewing && (
-                                            <button
-                                                className="w-full bg-red-700 p-3 rounded mt-2 hover:bg-red-600 transition-colors"
-                                                onClick={() => setShowDowngradeDialog(true)}
-                                            >
-                                                Cancel Renewal
-                                            </button>
+                        {loading ? (
+                            <div className="text-center text-gray-400 col-span-2">Loading plans...</div>
+                        ) : (
+                            plans.map((plan) => (
+                                <div
+                                    key={plan.name}
+                                    className={`bg-gray-800 p-6 rounded-lg border ${plan.current ? 'border-blue-500' : 'border-gray-700'
+                                        } space-y-4`}
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg capitalize">{plan.name}</h3>
+                                        {plan.current && (
+                                            <span className="text-sm text-blue-400">current plan</span>
                                         )}
                                     </div>
-                                )}
-                                {!plan.current && plan.name === "plus" && (
-                                    <button
-                                        className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors"
-                                        onClick={handleUpgrade}
-                                    >
-                                        <span>Upgrade</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
+                                    <div className="text-2xl font-bold">{plan.price}</div>
+                                    <ul className="space-y-3">
+                                        {plan.features.map((feature, index) => (
+                                            <li key={index} className="flex items-center space-x-2">
+                                                <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                                <span className="text-sm text-gray-400">{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {plan.name === "plus" && subscription.tier === "plus" && subscription.expiryDate && (
+                                        <div className="mt-4 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-gray-400">
+                                                    {subscription.isRenewing ? "Renewal Date:" : "Expiry Date:"}
+                                                </span>
+                                                <span>{new Date(subscription.expiryDate).toLocaleDateString()}</span>
+                                            </div>
+                                            {subscription.isRenewing && (
+                                                <button
+                                                    className="w-full bg-gray-700 p-3 rounded mt-2 hover:bg-gray-600 transition-colors"
+                                                    onClick={() => setShowDowngradeDialog(true)}
+                                                >
+                                                    Cancel Subscription
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                    {!plan.current && plan.name === "plus" && (
+                                        <button
+                                            className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors"
+                                            onClick={handleUpgrade}
+                                        >
+                                            <span>Upgrade</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
 
                 </div>
