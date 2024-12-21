@@ -58,7 +58,7 @@ components/ui/alert-dialog.jsx:
 
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 const AlertDialog = AlertDialogPrimitive.Root
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger
@@ -224,6 +224,16 @@ function rateLimiter(namespace, identifier, maxRequests, timeWindow) {
 export default rateLimiter;
 
 --------------------------------------------------------------------------------
+lib/utils.js:
+
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
+--------------------------------------------------------------------------------
 pages/new-entry.jsx:
 
 import React, { useState } from 'react';
@@ -237,7 +247,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '../components/ui/alert-dialog';
 
 const NewEntry = () => {
   const [entry, setEntry] = useState('');
@@ -394,9 +404,63 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
 
 
 --------------------------------------------------------------------------------
+pages/login.jsx:
+
+import React from 'react';
+import { signIn } from "next-auth/react";
+
+const Login = () => {
+  const handleGoogleAuth = () => {
+    signIn("google", { callbackUrl: "/" }); // Redirect to /home
+    console.log('Google auth clicked');
+  };
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+      <div className="max-w-md mx-auto space-y-8 pt-8">
+        <h1 className="text-2xl mb-10">tiny journal</h1>
+        <h1 className="text-2xl mb-12">Welcome back.</h1>
+
+        {/* Google Login/Signup */}
+        <button
+          type="button"
+          className="w-full bg-gray-800 p-4 rounded flex items-center justify-between transition-colors hover:bg-gray-700"
+          onClick={handleGoogleAuth}
+        >
+          <div className="flex items-center space-x-3">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            <span>Continue with Google</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
+--------------------------------------------------------------------------------
 pages/analyze.jsx:
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
 const TypingAnimation = () => (
   <div className="flex space-x-1.5 px-4 py-3">
@@ -417,6 +481,7 @@ const SuggestionButton = ({ icon: Icon, text, onClick }) => (
 );
 
 const Analyze = () => {
+    const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -490,7 +555,7 @@ const Analyze = () => {
   return (
     <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
       {/* Floating Back Button */}
-     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900">
+     <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
         <ArrowLeft className="w-5 h-5" />
       </button>
    
@@ -593,101 +658,54 @@ export default Analyze;
 --------------------------------------------------------------------------------
 pages/index.jsx:
 
-import React from 'react';
-import { signIn } from "next-auth/react";
-
-const Login = () => {
-  const handleGoogleAuth = () => {
-    signIn("google", { callbackUrl: "/home" }); // Redirect to /home
-    console.log('Google auth clicked');
-  };
-
-  return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
-      <div className="max-w-md mx-auto space-y-8 pt-8">
-        <h1 className="text-2xl mb-10">tiny journal</h1>
-        <h1 className="text-2xl mb-12">Welcome back.</h1>
-
-        {/* Google Login/Signup */}
-        <button
-          type="button"
-          className="w-full bg-gray-800 p-4 rounded flex items-center justify-between transition-colors hover:bg-gray-700"
-          onClick={handleGoogleAuth}
-        >
-          <div className="flex items-center space-x-3">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            <span>Continue with Google</span>
-          </div>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default Login;
-
---------------------------------------------------------------------------------
-pages/home.jsx:
-
 import React from "react";
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 const Home = () => {
+  const router = useRouter();
+
   const feedItems = [
     {
       date: "12/3/24",
       content: "New job, moving",
       emoji: "😎",
-    }
+    },
   ];
 
   return (
     <div className="bg-gray-900 p-6 min-h-screen text-gray-300 font-mono">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
-       <h1 className="text-2xl mb-10">
-         tiny journal
-        </h1>
+        <h1 className="text-2xl mb-10">tiny journal</h1>
 
         {/* Menu Items */}
         <div className="space-y-4">
-            <div className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors">
-              <span className="text-lg">new entry</span>
-            </div>
+          <div
+            onClick={() => router.push("/new-entry")}
+            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
+          >
+            <span className="text-lg">new entry</span>
+          </div>
 
+          <div
+            onClick={() => router.push("/analyze")}
+            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
+          >
+            <span className="text-lg">analyze</span>
+          </div>
 
-            <div className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors">
-              <span className="text-lg">analyze</span>
-            </div>
-
-
-
-            <div className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors">
-              <span className="text-lg">account</span>
-            </div>
-
+          <div
+            onClick={() => router.push("/account")}
+            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
+          >
+            <span className="text-lg">account</span>
+          </div>
         </div>
 
         {/* Feed Items */}
         <div className="space-y-2 mt-8">
           {feedItems.map((item, index) => (
-
             <div
               key={index}
               className="bg-gray-800 p-3 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
@@ -698,7 +716,6 @@ const Home = () => {
               </div>
               <span className="text-xl">{item.emoji}</span>
             </div>
-        
           ))}
         </div>
       </div>
@@ -706,8 +723,25 @@ const Home = () => {
   );
 };
 
-export default Home;
+// Redirect users to login page if not signed in
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
 
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {}, // Add any props you need for the page
+  };
+}
+
+export default Home;
 
 --------------------------------------------------------------------------------
 pages/account.jsx:
@@ -724,7 +758,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction
-} from "@/components/ui/alert-dialog";
+} from "../components/ui/alert-dialog";
 
 const Account = () => {
     const router = useRouter();
@@ -750,14 +784,14 @@ const Account = () => {
       current: user.currentPlan === "free"
     },
     {
-      name: "premium",
+      name: "plus",
       price: "$7/month",
       features: [
         "Unlimited journal entries",
         "Advanced AI analysis",
         "Increased analysis interactions",
       ],
-      current: user.currentPlan === "premium"
+      current: user.currentPlan === "plus"
     }
   ];
 

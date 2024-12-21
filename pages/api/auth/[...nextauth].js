@@ -69,7 +69,7 @@ export default NextAuth({
     async redirect({ url, baseUrl }) {
       // Redirect to the home page after login
       if (url.startsWith(baseUrl)) {
-        return `${baseUrl}/home`;
+        return `${baseUrl}/`;
       } else if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
       }
