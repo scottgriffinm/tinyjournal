@@ -755,6 +755,7 @@ import { useRouter } from "next/router";
 const Home = () => {
   const router = useRouter();
   const [entries, setEntries] = useState([]);
+  const [firstName, setFirstName] = useState("");
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -771,7 +772,15 @@ const Home = () => {
       }
     };
 
+    const fetchSession = async () => {
+      const session = await getSession();
+      if (session && session.user.firstName) {
+        setFirstName(session.user.firstName);
+      }
+    };
+
     fetchEntries();
+    fetchSession();
   }, []);
 
   const MenuItem = ({ label, path }) => (
@@ -787,7 +796,9 @@ const Home = () => {
     <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
-        <h1 className="text-2xl mb-10">tiny journal</h1>
+        <h1 className="text-2xl mb-10">
+         tiny journal
+        </h1>
 
         {/* Menu Items */}
         <div className="space-y-4">
@@ -1479,9 +1490,10 @@ export default NextAuth({
         token.accessTokenExpires = Date.now() + 1800 * 1000; // 30-minute expiration
       }
 
-      // Include the user's email in the token during initial sign-in
+      // Include the user's email and first name in the token during initial sign-in
       if (user) {
         token.email = user.email;
+        token.firstName = user.name.split(" ")[0]; // Extract the first name
       }
 
       if (Date.now() > token.accessTokenExpires) {
@@ -1497,6 +1509,7 @@ export default NextAuth({
       }
       session.accessToken = token.accessToken;
       session.user.email = token.email; // Include the email in the session
+      session.user.firstName = token.firstName; // Include the first name in the session
       return session;
     },
     async redirect({ url, baseUrl }) {
