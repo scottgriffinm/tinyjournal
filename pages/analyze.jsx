@@ -1,20 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
+
 const TypingAnimation = () => (
     <div className="flex space-x-1.5 px-4 py-3">
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
     </div>
 );
 
 const SuggestionButton = ({ icon: Icon, text, onClick }) => (
     <button
         onClick={onClick}
-        className="flex flex-col items-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-center space-y-3 border border-gray-700"
+        className="flex flex-col items-center p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors text-center space-y-3 border border-neutral-700"
     >
-        <Icon className="w-6 h-6 text-gray-400" />
+        <Icon className="w-6 h-6 text-neutral-400" />
         <span className="text-sm">{text}</span>
     </button>
 );
@@ -78,7 +79,6 @@ const Analyze = () => {
             messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
         }, 50);
 
-        // If the message matches a suggestion, use its response
         const suggestion = suggestions.find(s => s.text === messageText);
         const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
         await typeMessage(response);
@@ -92,12 +92,11 @@ const Analyze = () => {
     };
 
     return (
-        <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
+        <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
             {/* Floating Back Button */}
-            <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
+            <button className="absolute top-4 left-4 hover:bg-neutral-800 p-2 rounded transition-colors z-10 bg-neutral-900" onClick={() => router.push("/")}>
                 <ArrowLeft className="w-5 h-5" />
             </button>
-
 
             {/* Scrollable Messages Container */}
             <div
@@ -127,13 +126,13 @@ const Analyze = () => {
                             >
                                 {message.type === 'bot' && (
                                     <div className="mt-2">
-                                        <BookText className="w-5 h-5 text-gray-500" />
+                                        <BookText className="w-5 h-5 text-neutral-500" />
                                     </div>
                                 )}
                                 <div
                                     className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${message.type === 'user'
-                                            ? 'bg-gray-800'
-                                            : 'bg-gray-800 border border-gray-700'
+                                            ? 'bg-neutral-800/50'
+                                            : 'bg-neutral-800/30 border border-neutral-700'
                                         }`}
                                 >
                                     <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
@@ -147,9 +146,9 @@ const Analyze = () => {
                 {isTyping && (
                     <div className="flex w-full justify-start items-start space-x-2">
                         <div className="mt-2">
-                            <BookText className="w-5 h-5 text-gray-500" />
+                            <BookText className="w-5 h-5 text-neutral-500" />
                         </div>
-                        <div className="bg-gray-800 border border-gray-700 rounded">
+                        <div className="bg-neutral-800/50 border border-neutral-700 rounded">
                             {typingMessage ? (
                                 <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
                                     {typingMessage}
@@ -164,29 +163,29 @@ const Analyze = () => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-800 p-4 bg-gray-900">
+            <div className="border-t border-neutral-800 p-4 bg-neutral-900">
                 <div className="flex items-end space-x-2">
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="ask about your journal..."
-                        className="flex-1 bg-gray-800 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto"
+                        className="flex-1 bg-neutral-800/50 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
                         style={{
-                            lineHeight: '20px', // Set a consistent line-height
-                            height: '44px',     // Initial height
-                            minHeight: '44px',  // Match the height for empty state
+                            lineHeight: '20px',
+                            height: '44px',
+                            minHeight: '44px',
                         }}
                         onInput={(e) => {
                             const textarea = e.target;
-                            textarea.style.height = '44px'; // Reset height to minimum
-                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`; // Adjust dynamically
+                            textarea.style.height = '44px';
+                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
                         }}
                     />
                     <button
                         onClick={() => handleSend()}
                         disabled={!input.trim()}
-                        className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:hover:bg-gray-800"
+                        className="bg-neutral-800/50 p-3 rounded hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:hover:bg-neutral-800"
                     >
                         <ArrowUp className="w-5 h-5" />
                     </button>
@@ -211,8 +210,7 @@ export async function getServerSideProps(context) {
     }
 
     return {
-        props: {
-        },
+        props: {},
     };
 }
 

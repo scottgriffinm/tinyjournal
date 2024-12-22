@@ -46,9 +46,10 @@ export default NextAuth({
         token.accessTokenExpires = Date.now() + 1800 * 1000; // 30-minute expiration
       }
 
-      // Include the user's email in the token during initial sign-in
+      // Include the user's email and first name in the token during initial sign-in
       if (user) {
         token.email = user.email;
+        token.firstName = user.name.split(" ")[0]; // Extract the first name
       }
 
       if (Date.now() > token.accessTokenExpires) {
@@ -64,6 +65,7 @@ export default NextAuth({
       }
       session.accessToken = token.accessToken;
       session.user.email = token.email; // Include the email in the session
+      session.user.firstName = token.firstName; // Include the first name in the session
       return session;
     },
     async redirect({ url, baseUrl }) {

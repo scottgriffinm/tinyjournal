@@ -237,6 +237,7 @@ export function cn(...inputs) {
 pages/new-entry.jsx:
 
 import React, { useState } from 'react';
+import { useRouter } from "next/router";
 import { Trash2, Save } from 'lucide-react';
 import {
   AlertDialog,
@@ -250,6 +251,7 @@ import {
 } from '../components/ui/alert-dialog';
 
 const NewEntry = () => {
+  const router = useRouter();
   const [entry, setEntry] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -257,31 +259,51 @@ const NewEntry = () => {
   const handleDelete = () => {
     setEntry('');
     setShowDeleteDialog(false);
+    router.push("/");
   };
 
-  const handleSave = () => {
-    console.log('Entry saved:', entry);
-    // Here you would typically save to your backend
-    setShowSaveDialog(false);
+  const handleSave = async () => {
+    const shortSummary = entry.slice(0, 10);
+    const longSummary = entry.slice(0, 20);
+
+    try {
+      const response = await fetch('/api/create-entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: entry, shortSummary, longSummary }),
+      });
+
+      if (response.ok) {
+        console.log('Entry successfully saved!');
+        setEntry('');
+        setShowSaveDialog(false);
+        router.push("/");
+      } else {
+        const errorData = await response.json();
+        console.error('Error saving entry:', errorData.error);
+      }
+    } catch (error) {
+      console.error('Error saving entry:', error);
+    }
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono relative">
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono relative">
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
         <button
           onClick={() => entry.trim() && setShowDeleteDialog(true)}
-          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
         >
-          <Trash2 className="w-5 h-5 text-gray-400" />
+          <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
-          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
         >
-          <Save className="w-5 h-5 text-gray-400" />
+          <Save className="w-5 h-5 text-neutral-400" />
         </button>
       </div>
 
@@ -290,28 +312,28 @@ const NewEntry = () => {
         value={entry}
         onChange={(e) => setEntry(e.target.value)}
         placeholder="start typing..."
-        className="w-full h-screen bg-gray-900 p-8 resize-none focus:outline-none"
+        className="w-full h-screen bg-neutral-900 p-8 resize-none focus:outline-none text-neutral-300"
         autoFocus
       />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-300">delete entry?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogTitle className="text-neutral-300">delete entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
               this action cannot be undone. this entry will be deleted forever.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
-              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+            <AlertDialogCancel
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
               onClick={() => setShowDeleteDialog(false)}
             >
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-900 hover:bg-red-800 text-gray-300 border-red-800"
+              className="bg-red-900 hover:bg-red-800 text-neutral-300 border border-red-800"
               onClick={handleDelete}
             >
               delete
@@ -322,22 +344,22 @@ const NewEntry = () => {
 
       {/* Save Confirmation Dialog */}
       <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-300">save entry?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogTitle className="text-neutral-300">save entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
               once saved, this entry cannot be modified. are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
-              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+            <AlertDialogCancel
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
               onClick={() => setShowSaveDialog(false)}
             >
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-green-900 hover:bg-green-800 text-gray-300 border-green-800"
+              className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
               onClick={handleSave}
             >
               save
@@ -349,33 +371,79 @@ const NewEntry = () => {
   );
 };
 
+// Redirect users to login page if not signed in
+export async function getServerSideProps(context) {
+  const { getSession } = await import('next-auth/react');
+  const session = await getSession(context);
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
+
 export default NewEntry;
 
 --------------------------------------------------------------------------------
 pages/entry.jsx:
 
-import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { ArrowLeft } from "lucide-react";
 
 const EntryView = () => {
-  // Mock data - would come from props or API
-  const entry = {
-    date: "12/3/24",
-    content: "Today marks a significant change in my life. I accepted a new job offer and will be moving to a different city. It's both exciting and nerve-wracking to think about all the changes ahead. The company seems great, and the role aligns perfectly with where I want to take my career. Still, leaving behind friends and familiar places isn't easy. I'm trying to focus on the opportunities ahead rather than what I'm leaving behind."
-  };
+  const router = useRouter();
+  const { id } = router.query;
+  const [entry, setEntry] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchEntry = async () => {
+      try {
+        const res = await fetch(`/api/get-entry?id=${id}`);
+        const data = await res.json();
+        if (res.ok) {
+          setEntry(data);
+        } else {
+          console.error("Error fetching entry:", data.error);
+        }
+      } catch (error) {
+        console.error("Failed to fetch entry:", error);
+      }
+    };
+
+    fetchEntry();
+  }, [id]);
+
+  if (!entry) {
+    return (
+      <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-2xl mx-auto">
-        {/* Header with back button and date */}
         <div className="flex justify-between items-center mb-8">
-          <ArrowLeft className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer" />
-          <span className="text-gray-500">{entry.date}</span>
+          <ArrowLeft
+            className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
+            onClick={() => router.push("/")}
+          />
+          <span className="text-neutral-500">{entry.formattedDateTime}</span>
         </div>
-
-        {/* Entry content */}
-        <div className="whitespace-pre-wrap leading-relaxed">
-          {entry.content}
+        <div className="whitespace-pre-wrap leading-relaxed text-neutral-300">
+          {entry.text}
         </div>
       </div>
     </div>
@@ -411,12 +479,12 @@ import { signIn } from "next-auth/react";
 
 const Login = () => {
   const handleGoogleAuth = () => {
-    signIn("google", { callbackUrl: "/" }); // Redirect to /home
+    signIn("google", { callbackUrl: "/" }); // Redirect to /
     console.log('Google auth clicked');
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-md mx-auto space-y-8 pt-8">
         <h1 className="text-2xl mb-10">tiny journal</h1>
         <h1 className="text-2xl mb-12">Welcome back.</h1>
@@ -424,7 +492,7 @@ const Login = () => {
         {/* Google Login/Signup */}
         <button
           type="button"
-          className="w-full bg-gray-800 p-4 rounded flex items-center justify-between transition-colors hover:bg-gray-700"
+          className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-neutral-800 border border-neutral-700"
           onClick={handleGoogleAuth}
         >
           <div className="flex items-center space-x-3">
@@ -462,20 +530,21 @@ pages/analyze.jsx:
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
+
 const TypingAnimation = () => (
     <div className="flex space-x-1.5 px-4 py-3">
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
-        <div className="w-2 h-2 bg-gray-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
+        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
     </div>
 );
 
 const SuggestionButton = ({ icon: Icon, text, onClick }) => (
     <button
         onClick={onClick}
-        className="flex flex-col items-center p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-center space-y-3 border border-gray-700"
+        className="flex flex-col items-center p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors text-center space-y-3 border border-neutral-700"
     >
-        <Icon className="w-6 h-6 text-gray-400" />
+        <Icon className="w-6 h-6 text-neutral-400" />
         <span className="text-sm">{text}</span>
     </button>
 );
@@ -539,7 +608,6 @@ const Analyze = () => {
             messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
         }, 50);
 
-        // If the message matches a suggestion, use its response
         const suggestion = suggestions.find(s => s.text === messageText);
         const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
         await typeMessage(response);
@@ -553,12 +621,11 @@ const Analyze = () => {
     };
 
     return (
-        <div className="bg-gray-900 min-h-screen text-gray-300 font-mono flex flex-col h-screen relative">
+        <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
             {/* Floating Back Button */}
-            <button className="absolute top-4 left-4 hover:bg-gray-800 p-2 rounded transition-colors z-10 bg-gray-900" onClick={() => router.push("/")}>
+            <button className="absolute top-4 left-4 hover:bg-neutral-800 p-2 rounded transition-colors z-10 bg-neutral-900" onClick={() => router.push("/")}>
                 <ArrowLeft className="w-5 h-5" />
             </button>
-
 
             {/* Scrollable Messages Container */}
             <div
@@ -588,13 +655,13 @@ const Analyze = () => {
                             >
                                 {message.type === 'bot' && (
                                     <div className="mt-2">
-                                        <BookText className="w-5 h-5 text-gray-500" />
+                                        <BookText className="w-5 h-5 text-neutral-500" />
                                     </div>
                                 )}
                                 <div
                                     className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${message.type === 'user'
-                                            ? 'bg-gray-800'
-                                            : 'bg-gray-800 border border-gray-700'
+                                            ? 'bg-neutral-800/50'
+                                            : 'bg-neutral-800/30 border border-neutral-700'
                                         }`}
                                 >
                                     <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
@@ -608,9 +675,9 @@ const Analyze = () => {
                 {isTyping && (
                     <div className="flex w-full justify-start items-start space-x-2">
                         <div className="mt-2">
-                            <BookText className="w-5 h-5 text-gray-500" />
+                            <BookText className="w-5 h-5 text-neutral-500" />
                         </div>
-                        <div className="bg-gray-800 border border-gray-700 rounded">
+                        <div className="bg-neutral-800/50 border border-neutral-700 rounded">
                             {typingMessage ? (
                                 <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
                                     {typingMessage}
@@ -625,29 +692,29 @@ const Analyze = () => {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-800 p-4 bg-gray-900">
+            <div className="border-t border-neutral-800 p-4 bg-neutral-900">
                 <div className="flex items-end space-x-2">
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="ask about your journal..."
-                        className="flex-1 bg-gray-800 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto"
+                        className="flex-1 bg-neutral-800/50 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
                         style={{
-                            lineHeight: '20px', // Set a consistent line-height
-                            height: '44px',     // Initial height
-                            minHeight: '44px',  // Match the height for empty state
+                            lineHeight: '20px',
+                            height: '44px',
+                            minHeight: '44px',
                         }}
                         onInput={(e) => {
                             const textarea = e.target;
-                            textarea.style.height = '44px'; // Reset height to minimum
-                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`; // Adjust dynamically
+                            textarea.style.height = '44px';
+                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
                         }}
                     />
                     <button
                         onClick={() => handleSend()}
                         disabled={!input.trim()}
-                        className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:hover:bg-gray-800"
+                        className="bg-neutral-800/50 p-3 rounded hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:hover:bg-neutral-800"
                     >
                         <ArrowUp className="w-5 h-5" />
                     </button>
@@ -657,68 +724,90 @@ const Analyze = () => {
     );
 };
 
+// Redirect users to login page if not signed in
+export async function getServerSideProps(context) {
+    const { getSession } = await import("next-auth/react");
+    const session = await getSession(context);
+
+    if (!session) {
+        return {
+            redirect: {
+                destination: "/login",
+                permanent: false,
+            },
+        };
+    }
+
+    return {
+        props: {},
+    };
+}
+
 export default Analyze;
 
 --------------------------------------------------------------------------------
 pages/index.jsx:
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const Home = () => {
   const router = useRouter();
+  const [entries, setEntries] = useState([]);
 
-  const feedItems = [
-    {
-      date: "12/3/24",
-      content: "New job, moving",
-      emoji: "😎",
-    },
-  ];
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const res = await fetch("/api/get-entries");
+        const data = await res.json();
+        if (res.ok) {
+          setEntries(data.entries);
+        } else {
+          console.error("Error fetching entries:", data.error);
+        }
+      } catch (error) {
+        console.error("Failed to fetch entries:", error);
+      }
+    };
+
+    fetchEntries();
+  }, []);
+
+  const MenuItem = ({ label, path }) => (
+    <div
+      onClick={() => router.push(path)}
+      className="bg-neutral-800/50 p-4 rounded-lg flex items-center space-x-2 cursor-pointer hover:bg-neutral-800 transition-colors border border-neutral-700"
+    >
+      <span className="text-lg text-neutral-300">{label}</span>
+    </div>
+  );
 
   return (
-    <div className="bg-gray-900 p-6 min-h-screen text-gray-300 font-mono">
+    <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <h1 className="text-2xl mb-10">tiny journal</h1>
 
         {/* Menu Items */}
         <div className="space-y-4">
-          <div
-            onClick={() => router.push("/new-entry")}
-            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
-          >
-            <span className="text-lg">new entry</span>
-          </div>
-
-          <div
-            onClick={() => router.push("/analyze")}
-            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
-          >
-            <span className="text-lg">analyze</span>
-          </div>
-
-          <div
-            onClick={() => router.push("/account")}
-            className="bg-gray-800 p-4 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
-          >
-            <span className="text-lg">account</span>
-          </div>
+          <MenuItem label="new entry" path="/new-entry" />
+          <MenuItem label="analyze" path="/analyze" />
+          <MenuItem label="account" path="/account" />
         </div>
 
         {/* Feed Items */}
         <div className="space-y-2 mt-8">
-          {feedItems.map((item, index) => (
+          {entries.map((entry) => (
             <div
-              key={index}
-              className="bg-gray-800 p-3 rounded flex items-center space-x-2 cursor-pointer hover:bg-gray-700 transition-colors"
+              key={entry.id}
+              className="bg-neutral-800/30 p-3 rounded-lg flex justify-between items-center cursor-pointer hover:bg-neutral-800/50 transition-colors border border-neutral-700"
+              onClick={() => router.push(`/entry?id=${entry.id}`)}
             >
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">{item.date}</span>
-                <span>{item.content}</span>
+                <span className="text-sm text-neutral-500">{entry.formattedDate}</span>
+                <span className="text-neutral-300">{entry.shortSummary}</span>
               </div>
-              <span className="text-xl">{item.emoji}</span>
             </div>
           ))}
         </div>
@@ -767,7 +856,7 @@ import {
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
-    const [loading, setLoading] = useState(true); // New loading state
+    const [loading, setLoading] = useState(true);
     const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [subscription, setSubscription] = useState({
@@ -816,7 +905,7 @@ const Account = ({ userEmail }) => {
             } catch (error) {
                 console.error("Error fetching subscription status:", error);
             } finally {
-                setLoading(false); // Data has been fetched
+                setLoading(false);
             }
         };
 
@@ -832,7 +921,7 @@ const Account = ({ userEmail }) => {
             });
             const data = await response.json();
             if (response.ok) {
-                window.location.href = data.url; // Redirect to Stripe checkout
+                window.location.href = data.url;
             } else {
                 console.error("Failed to upgrade:", data.error);
             }
@@ -852,7 +941,7 @@ const Account = ({ userEmail }) => {
             if (response.ok) {
                 setSubscription({
                     ...subscription,
-                    isRenewing: false, // Indicate that auto-renewal is canceled
+                    isRenewing: false,
                 });
                 setShowDowngradeDialog(false);
             } else {
@@ -864,71 +953,66 @@ const Account = ({ userEmail }) => {
     };
 
     const handleLogout = () => {
-        console.log('Logging out...');
         setShowLogoutDialog(false);
-        signOut({ callbackUrl: "/login" }); // Log out and redirect to the home page
+        signOut({ callbackUrl: "/login" });
     };
 
     return (
-        <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+        <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
             <div className="max-w-2xl mx-auto space-y-8">
-                {/* Header */}
                 <h1 className="text-2xl mb-8 flex items-center space-x-3">
                     <ArrowLeft
-                        className="w-6 h-6 text-gray-400 hover:text-gray-300 cursor-pointer"
+                        className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
                         onClick={() => router.push("/")}
                     />
                     <span>Account</span>
                 </h1>
 
-                {/* Account Info Section */}
                 <div className="space-y-6">
-                    <h2 className="text-lg text-gray-400">profile</h2>
-                    <div className="bg-gray-800 p-4 rounded flex items-center space-x-3">
-                        <Mail className="w-5 h-5 text-gray-500" />
+                    <h2 className="text-lg text-neutral-400">profile</h2>
+                    <div className="bg-neutral-800/50 p-4 rounded-lg flex items-center space-x-3 border border-neutral-700">
+                        <Mail className="w-5 h-5 text-neutral-500" />
                         <span>{userEmail || "Loading..."}</span>
                     </div>
                 </div>
 
-                {/* Subscription Info Section */}
                 <div className="space-y-6">
-                    <h2 className="text-lg text-gray-400">subscription</h2>
+                    <h2 className="text-lg text-neutral-400">subscription</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {loading ? (
-                            <div className="text-center text-gray-400 col-span-2">Loading plans...</div>
+                            <div className="text-center text-neutral-400 col-span-2">Loading...</div>
                         ) : (
                             plans.map((plan) => (
                                 <div
                                     key={plan.name}
-                                    className={`bg-gray-800 p-6 rounded-lg border ${plan.current ? 'border-blue-500' : 'border-gray-700'
-                                        } space-y-4`}
+                                    className={`bg-neutral-800/50 p-6 rounded-lg border ${plan.current ? 'border-neutral-400' : 'border-neutral-700'} space-y-4`}
                                 >
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-lg capitalize">{plan.name}</h3>
                                         {plan.current && (
-                                            <span className="text-sm text-blue-400">current plan</span>
+                                            <span className="text-sm text-gray-400">current plan</span>
                                         )}
                                     </div>
                                     <div className="text-2xl font-bold">{plan.price}</div>
                                     <ul className="space-y-3">
                                         {plan.features.map((feature, index) => (
                                             <li key={index} className="flex items-center space-x-2">
-                                                <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                                <span className="text-sm text-gray-400">{feature}</span>
+                                                <CheckCircle2 className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+                                                <span className="text-sm text-neutral-400">{feature}</span>
                                             </li>
                                         ))}
                                     </ul>
                                     {plan.name === "plus" && subscription.tier === "plus" && subscription.expiryDate && (
                                         <div className="mt-4 space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-gray-400">
+                                                <span className="text-neutral-400">
                                                     {subscription.isRenewing ? "Renewal Date:" : "Expiry Date:"}
                                                 </span>
                                                 <span>{new Date(subscription.expiryDate).toLocaleDateString()}</span>
                                             </div>
                                             {subscription.isRenewing && (
                                                 <button
-                                                    className="w-full bg-gray-700 p-3 rounded mt-2 hover:bg-gray-600 transition-colors"
+                                                    className="w-full bg-neutral-700 p-3 rounded mt-2 hover:bg-neutral-600 transition-colors"
                                                     onClick={() => setShowDowngradeDialog(true)}
                                                 >
                                                     Cancel Subscription
@@ -938,7 +1022,7 @@ const Account = ({ userEmail }) => {
                                     )}
                                     {!plan.current && plan.name === "plus" && (
                                         <button
-                                            className="w-full mt-4 bg-gray-700 p-3 rounded flex items-center justify-between hover:bg-gray-600 transition-colors"
+                                            className="w-full mt-4 bg-neutral-700 p-3 rounded-lg flex items-center justify-between hover:bg-neutral-600 transition-colors"
                                             onClick={handleUpgrade}
                                         >
                                             <span>Upgrade</span>
@@ -949,14 +1033,12 @@ const Account = ({ userEmail }) => {
                             ))
                         )}
                     </div>
-
                 </div>
 
-                {/* Logout Button */}
                 <div className="pt-8">
                     <button
                         onClick={() => setShowLogoutDialog(true)}
-                        className="w-full bg-gray-800 p-4 rounded flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors"
+                        className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
                     >
                         <LogOut className="w-5 h-5" />
                         <span>logout</span>
@@ -964,24 +1046,23 @@ const Account = ({ userEmail }) => {
                 </div>
             </div>
 
-            {/* Cancel Renewal Confirmation Dialog */}
             <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
-                <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-gray-300">Cancel Subscription Renewal</AlertDialogTitle>
-                        <AlertDialogDescription className="text-gray-400">
+                        <AlertDialogTitle className="text-neutral-300">Cancel Subscription Renewal</AlertDialogTitle>
+                        <AlertDialogDescription className="text-neutral-400">
                             Are you sure you want to cancel the renewal of your subscription? You will keep your benefits until the end of your subscription period.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
-                            className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
                             onClick={() => setShowDowngradeDialog(false)}
                         >
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-red-700 hover:bg-red-600 text-gray-300"
+                            className="bg-red-700 hover:bg-red-600 text-neutral-300"
                             onClick={handleCancelRenewal}
                         >
                             Confirm
@@ -990,27 +1071,26 @@ const Account = ({ userEmail }) => {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Logout Confirmation Dialog */}
             <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-                <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-gray-300">confirm logout</AlertDialogTitle>
-                        <AlertDialogDescription className="text-gray-400">
-                            are you sure you want to logout of your account?
+                        <AlertDialogTitle className="text-neutral-300">Confirm Logout</AlertDialogTitle>
+                        <AlertDialogDescription className="text-neutral-400">
+                            Are you sure you want to log out of your account?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
-                            className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
                             onClick={() => setShowLogoutDialog(false)}
                         >
-                            cancel
+                            Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-gray-700 hover:bg-gray-600 text-gray-300"
+                            className="bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
                             onClick={handleLogout}
                         >
-                            logout
+                            Logout
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -1040,6 +1120,95 @@ export async function getServerSideProps(context) {
 }
 
 export default Account;
+
+--------------------------------------------------------------------------------
+pages/api/create-entry.js:
+
+import pool from '../../lib/db';
+import { getToken } from 'next-auth/jwt';
+import { v4 as uuidv4 } from 'uuid';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { text } = req.body;
+
+  if (!text) {
+    return res.status(400).json({ error: 'Invalid request data' });
+  }
+
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const generateSummary = async (prompt) => {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = await response.text();
+      return text.trim();
+    };
+
+    // Generate short summary
+    const shortSummaryPrompt = `Provide a concise summary for the following journal entry. The summary should be at most 20 characters and end with a characteristic emoji:\n\n${text}`;
+    const shortSummary = await generateSummary(shortSummaryPrompt);
+
+    // Generate long summary
+    const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
+    const longSummary = await generateSummary(longSummaryPrompt);
+
+    const id = uuidv4();
+    const dateTime = new Date();
+
+    await pool.query(
+      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, token.email, dateTime, shortSummary, longSummary, text]
+    );
+
+    res.status(201).json({ message: 'Entry created successfully', id, shortSummary, longSummary });
+  } catch (error) {
+    console.error('Error creating entry:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+--------------------------------------------------------------------------------
+pages/api/get-entries.js:
+
+import pool from '../../lib/db';
+import { getToken } from 'next-auth/jwt';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const [entries] = await pool.query(
+      'SELECT id, DATE_FORMAT(dateTime, "%m/%d/%y") as formattedDate, shortSummary FROM entries WHERE email = ? ORDER BY dateTime DESC',
+      [token.email]
+    );
+
+    res.status(200).json({ entries });
+  } catch (error) {
+    console.error('Error fetching entries:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 
 --------------------------------------------------------------------------------
 pages/api/get-subscription-status.js:
@@ -1100,6 +1269,46 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error fetching subscription status:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+--------------------------------------------------------------------------------
+pages/api/get-entry.js:
+
+import pool from '../../lib/db';
+import { getToken } from 'next-auth/jwt';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { id } = req.query;
+
+  try {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const [entry] = await pool.query(
+      `SELECT 
+         DATE_FORMAT(dateTime, "%m/%d/%y %h:%i %p") as formattedDateTime, 
+         text 
+       FROM entries 
+       WHERE id = ? AND email = ?`,
+      [id, token.email]
+    );
+
+    if (entry.length === 0) {
+      return res.status(404).json({ error: 'Entry not found' });
+    }
+
+    res.status(200).json(entry[0]);
+  } catch (error) {
+    console.error('Error fetching entry:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
 

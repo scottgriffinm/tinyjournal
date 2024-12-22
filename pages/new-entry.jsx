@@ -21,7 +21,7 @@ const NewEntry = () => {
   const handleDelete = () => {
     setEntry('');
     setShowDeleteDialog(false);
-    router.push("/")
+    router.push("/");
   };
 
   const handleSave = async () => {
@@ -39,7 +39,7 @@ const NewEntry = () => {
         console.log('Entry successfully saved!');
         setEntry('');
         setShowSaveDialog(false);
-        router.push("/")
+        router.push("/");
       } else {
         const errorData = await response.json();
         console.error('Error saving entry:', errorData.error);
@@ -50,22 +50,22 @@ const NewEntry = () => {
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono relative">
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono relative">
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
         <button
           onClick={() => entry.trim() && setShowDeleteDialog(true)}
-          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
         >
-          <Trash2 className="w-5 h-5 text-gray-400" />
+          <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
-          className="bg-gray-800 p-3 rounded hover:bg-gray-700 transition-colors disabled:opacity-50"
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
         >
-          <Save className="w-5 h-5 text-gray-400" />
+          <Save className="w-5 h-5 text-neutral-400" />
         </button>
       </div>
 
@@ -74,28 +74,28 @@ const NewEntry = () => {
         value={entry}
         onChange={(e) => setEntry(e.target.value)}
         placeholder="start typing..."
-        className="w-full h-screen bg-gray-900 p-8 resize-none focus:outline-none"
+        className="w-full h-screen bg-neutral-900 p-8 resize-none focus:outline-none text-neutral-300"
         autoFocus
       />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-300">delete entry?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogTitle className="text-neutral-300">delete entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
               this action cannot be undone. this entry will be deleted forever.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
               onClick={() => setShowDeleteDialog(false)}
             >
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-900 hover:bg-red-800 text-gray-300 border-red-800"
+              className="bg-red-900 hover:bg-red-800 text-neutral-300 border border-red-800"
               onClick={handleDelete}
             >
               delete
@@ -106,22 +106,22 @@ const NewEntry = () => {
 
       {/* Save Confirmation Dialog */}
       <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <AlertDialogContent className="bg-gray-800 text-gray-300 border-gray-700">
+        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-300">save entry?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogTitle className="text-neutral-300">save entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
               once saved, this entry cannot be modified. are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              className="bg-gray-700 text-gray-300 hover:bg-gray-600 border-gray-600"
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
               onClick={() => setShowSaveDialog(false)}
             >
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-green-900 hover:bg-green-800 text-gray-300 border-green-800"
+              className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
               onClick={handleSave}
             >
               save

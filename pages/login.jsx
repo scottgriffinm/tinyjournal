@@ -3,12 +3,12 @@ import { signIn } from "next-auth/react";
 
 const Login = () => {
   const handleGoogleAuth = () => {
-    signIn("google", { callbackUrl: "/" }); // Redirect to /home
+    signIn("google", { callbackUrl: "/" }); // Redirect to /
     console.log('Google auth clicked');
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-300 font-mono p-6">
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-md mx-auto space-y-8 pt-8">
         <h1 className="text-2xl mb-10">tiny journal</h1>
         <h1 className="text-2xl mb-12">Welcome back.</h1>
@@ -16,7 +16,7 @@ const Login = () => {
         {/* Google Login/Signup */}
         <button
           type="button"
-          className="w-full bg-gray-800 p-4 rounded flex items-center justify-between transition-colors hover:bg-gray-700"
+          className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-neutral-800 border border-neutral-700"
           onClick={handleGoogleAuth}
         >
           <div className="flex items-center space-x-3">
