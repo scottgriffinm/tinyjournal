@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     });
 
     const finalPrompt = `
-You are analyzing a user's journaling data.
+You are analyzing a user's journaling data. Make sure to keep a helpful and caring attitude. You are an AI but you care about the person you're talking to.
 
 ${summariesSection}
 
@@ -62,7 +62,8 @@ ${conversationSection}
 Now the user is asking:
 "${userMessage}"
 
-Please provide a thoughtful, relevant, and concise response based on the user's journal summaries past messages, and current message.
+Please provide a thoughtful, relevant, and concise response based on the user's journal summaries past messages, and current message. Make sure to be thoughful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
+If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. They are not alone.
     `.trim();
 
     // 5) Call the Google Generative AI "gemini-1.5-flash" model
