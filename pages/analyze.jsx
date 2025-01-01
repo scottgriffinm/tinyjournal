@@ -8,8 +8,12 @@ import {
   Sparkles,
   Rocket,
   Smile,
-  Plus, 
+  Plus,
 } from 'lucide-react';
+
+// NEW IMPORTS for your graphs:
+import EntryEmotionGraph from '../components/graphs/EntryEmotionGraph';
+import EntryHistoryChart from '../components/graphs/EntryHistoryChart';
 
 // "Bouncing dots" used for both waiting and typing:
 const TypingAnimation = () => (
@@ -45,6 +49,7 @@ const parseTextFormatting = (text) => {
   let formattedText = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   // Then handle italic (*text*)
   formattedText = formattedText.replace(/\*(.+?)\*/g, '<i>$1</i>');
+  // Replace leftover '*' with '-'
   formattedText = formattedText.replace(/\*/g, '-');
   return formattedText;
 };
@@ -76,43 +81,46 @@ const Analyze = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
+  /**
+   * Type out the final text character by character
+   */
   const typeMessage = async (fullText, delay = 30) => {
-    const parsedText = parseTextFormatting(fullText); // parse text formatting
+    const parsedText = parseTextFormatting(fullText);
     setIsTyping(true);
-    setTypingMessage(''); // Reset current typing message
+    setTypingMessage('');
     isFirstCharacter.current = true;
-  
-    let displayedMessage = ''; // Raw text being typed
-    let formattedMessage = ''; // Parsed HTML being rendered
+
+    let displayedMessage = '';
+    let formattedMessage = '';
     const chunkSize = 3;
-  
+
     for (let i = 0; i < fullText.length; i += chunkSize) {
-      displayedMessage = fullText.slice(0, i + chunkSize); // Progressively slice raw text
-      formattedMessage = parseTextFormatting(displayedMessage); // Apply parsing to the current slice
-      setTypingMessage(formattedMessage); // Update state with formatted HTML
-  
+      displayedMessage = fullText.slice(0, i + chunkSize);
+      formattedMessage = parseTextFormatting(displayedMessage);
+      setTypingMessage(formattedMessage);
+
       if (isFirstCharacter.current) {
         setTimeout(scrollToBottom, 50);
         isFirstCharacter.current = false;
       }
-  
+
       await new Promise((resolve) =>
         requestAnimationFrame(() => {
           setTimeout(resolve, delay);
         })
       );
     }
-  
+
     setIsTyping(false);
     setTypingMessage('');
-  
-    // Append the final formatted message to the messages array
-    setMessages((prev) => [
-      ...prev,
-      { type: 'bot', content: parsedText },
-    ]);
+
+    // Return the final parsed HTML so we can insert it into messages
+    return parsedText;
   };
 
+  /**
+   * Sends the user message to /api/analyze, gets AI response, and updates state
+   */
   const handleSend = async (messageText = input) => {
     if (!messageText.trim()) return;
 
@@ -146,10 +154,25 @@ const Analyze = () => {
       }
 
       const data = await res.json();
+      setIsFetching(false);
+
+      // Animate the returned AI text
       if (data.aiResponse) {
-        setIsFetching(false);
-        await typeMessage(data.aiResponse);
+        const finalHTML = await typeMessage(data.aiResponse);
+
+        // Once typing is done, push it to messages
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: 'bot',
+            content: finalHTML,
+            // If the server returned chart data, attach it directly to the same bot message
+            emotionData: data.emotionData || null,
+            entryHistoryData: data.entryHistoryData || null,
+          },
+        ]);
       }
+
     } catch (error) {
       console.error('Error calling /api/analyze:', error);
     } finally {
@@ -157,6 +180,9 @@ const Analyze = () => {
     }
   };
 
+  /**
+   * Handles Enter key submission
+   */
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -177,7 +203,7 @@ const Analyze = () => {
 
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
-      {/* Container for both buttons */}
+      {/* Container for back + new-convo buttons */}
       <div className="absolute top-4 left-4 flex space-x-2 z-10">
         {/* Back Button */}
         <button
@@ -187,7 +213,7 @@ const Analyze = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* New Conversation Button (Plus Icon) */}
+        {/* New Conversation Button */}
         <button
           className="hover:bg-neutral-800 p-2 rounded transition-colors bg-neutral-900"
           onClick={handleNewConversation}
@@ -197,8 +223,11 @@ const Analyze = () => {
       </div>
 
       {/* Scrollable Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ overscrollBehavior: 'contain' }}>
-        {/* If no messages, show suggestions */}
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        style={{ overscrollBehavior: 'contain' }}
+      >
+        {/* If no messages yet, show suggestions */}
         {messages.length === 0 ? (
           <div className="h-full flex flex-col justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
@@ -214,56 +243,88 @@ const Analyze = () => {
           </div>
         ) : (
           <>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex w-full ${
-                  message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'
-                }`}
-              >
-                {message.type === 'bot' && (
-                  <div className="mt-2">
-                    <BookText className="w-5 h-5 text-neutral-500" />
+            {messages.map((message, index) => {
+              if (message.type === 'user') {
+                // user message bubble
+                return (
+                  <div
+                    key={index}
+                    className="flex w-full justify-end items-start"
+                  >
+                    <div
+                      className="max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden
+                                 bg-neutral-800/50"
+                    >
+                      <div
+                        className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+                        dangerouslySetInnerHTML={{ __html: message.content }}
+                      ></div>
+                    </div>
                   </div>
-                )}
-                <div
-                  className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${
-                    message.type === 'user'
-                      ? 'bg-neutral-800/50'
-                      : 'bg-neutral-800/30 border border-neutral-700'
-                  }`}
-                >
-                   <div
-    className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
-    dangerouslySetInnerHTML={{ __html: message.content }}
-  ></div>
-                </div>
-              </div>
-            ))}
+                );
+              } else if (message.type === 'bot') {
+                // AI message bubble
+                return (
+                  <div
+                    key={index}
+                    className="flex w-full justify-start items-start space-x-2"
+                  >
+                    <div className="mt-2">
+                      <BookText className="w-5 h-5 text-neutral-500" />
+                    </div>
+                    <div className="max-w-[80%] min-w-0">
+                      {/* AI message bubble */}
+                      <div
+                        className="px-4 py-2 rounded break-words overflow-hidden
+                                   bg-neutral-800/30 border border-neutral-700"
+                      >
+                        <div
+                          className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+                          dangerouslySetInnerHTML={{ __html: message.content }}
+                        />
+                      </div>
+                      {/* Charts below the message bubble */}
+                      {message.emotionData && (
+                        <div className="mt-2">
+                          <EntryEmotionGraph data={message.emotionData} />
+                        </div>
+                      )}
+                      {message.entryHistoryData && (
+                        <div className="mt-2">
+                          <EntryHistoryChart data={message.entryHistoryData} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              } else {
+                // fallback for unknown message types
+                return null;
+              }
+            })}
           </>
         )}
 
-        {/* Display "bouncing dots" if we are waiting for the server,
-            or if we are currently typing out the final AI response. */}
+        {/* Display bouncing dots if waiting for server or actively typing */}
         {(isFetching || isTyping) && (
           <div className="flex w-full justify-start items-start space-x-2">
             <div className="mt-2">
               <BookText className="w-5 h-5 text-neutral-500" />
             </div>
             <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-            {isTyping && typingMessage ? (
-  <div
-    className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
-    dangerouslySetInnerHTML={{ __html: typingMessage }}
-  ></div>
-) : (
-  <TypingAnimation />
-)}
+              {isTyping && typingMessage ? (
+                <div
+                  className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+                  dangerouslySetInnerHTML={{ __html: typingMessage }}
+                ></div>
+              ) : (
+                <TypingAnimation />
+              )}
             </div>
           </div>
         )}
 
-        {/* Dummy ref to scroll into view */}
+        {/* Dummy ref for scrolling */}
         <div ref={messagesEndRef} />
       </div>
 

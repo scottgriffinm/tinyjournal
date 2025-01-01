@@ -40,10 +40,12 @@ const EntryHistoryChart = ({ data }) => {
 
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
-      <div className="flex items-center mb-6">
-        <h3 className="text-neutral-300 font-mono">Entry Timing</h3>
+      {/* Centered Legend */}
+      <div className="flex justify-center items-center mb-4">
+        <h3 className="text-white font-mono text-sm">Entries</h3>
       </div>
-      <div className="h-96">
+      {/* Chart Container */}
+      <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart
             margin={{ top: 5, right: 30, left: 0, bottom: 5 }}

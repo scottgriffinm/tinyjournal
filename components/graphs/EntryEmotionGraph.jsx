@@ -34,24 +34,20 @@ const EntryEmotionGraph = ({ data }) => {
 
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-neutral-300 font-mono">Emotions</h3>
-        <div className="flex flex-wrap gap-6">
+      <div className="flex flex-col items-center mb-6">
+        <div className="flex gap-6 items-center">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#4ade80' }} />
             <span style={{ color: '#4ade80' }} className="text-sm">Happiness</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#60a5fa' }} />
             <span style={{ color: '#60a5fa' }} className="text-sm">Connection</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#fbbf24' }} />
             <span style={{ color: '#fbbf24' }} className="text-sm">Productivity</span>
           </div>
         </div>
       </div>
-      <div className="h-96">
+      <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}

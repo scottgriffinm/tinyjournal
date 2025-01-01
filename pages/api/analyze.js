@@ -35,15 +35,14 @@ export default async function handler(req, res) {
 
     // If no entries yet, respond with no entry message
     if (entries.length === 0) {
-      return res.status(200).json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
+      return res
+        .status(200)
+        .json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
     }
 
     // 4) Construct the prompt
-    //    a) Summaries with date
-    //    b) The conversation so far
-    //    c) The user’s current message
     let summariesSection = "These are summaries of the users journal entries:\n";
-    entries.forEach((entry, i) => {
+    entries.forEach((entry) => {
       summariesSection += `Entry date: ${entry.formattedDate}]\n Summary: ${entry.longSummary}\n\n`;
     });
 
@@ -67,7 +66,7 @@ ${conversationSection}
 Now the user is asking:
 "${userMessage}"
 
-Please provide a thoughtful, relevant, and concise response based on the user's journal summaries past messages, and current message. Make sure to be thoughful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
+Please provide a thoughtful, relevant, and concise response based on the user's journal summaries, past messages, and current message. Make sure to be thoughtful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
 If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. They are not alone.
     `.trim();
 
@@ -78,7 +77,57 @@ If you see any seriously concerning behavior, make sure to remind the user in an
     const response = await result.response;
     const aiText = (await response.text()).trim();
     console.log(aiText);
-    return res.status(200).json({ aiResponse: aiText });
+
+    // -------------------------------------
+    // NEW CODE FOR RETURNING CHART DATA
+    // -------------------------------------
+    let emotionData = null;
+    let entryHistoryData = null;
+
+    // If userMessage is exactly "Analyze trends in my journal" (case-insensitive),
+    // also return arrays for the EntryEmotionGraph & EntryHistoryChart
+    if (userMessage.trim().toLowerCase() === "analyze trends in my journal") {
+      // 1. Fetch dateTime & emotions from the DB
+      const [chartEntries] = await pool.query(
+        `SELECT dateTime, emotions
+         FROM entries
+         WHERE email = ?
+         ORDER BY dateTime ASC`,
+        [token.email]
+      );
+
+      // 2. Parse data for the charts:
+      //    a) emotionData: { date, happiness, connection, productivity }
+      emotionData = chartEntries.map((row) => {
+        const parsedEmotions = row.emotions ? JSON.parse(row.emotions) : {};
+        const dateObj = new Date(row.dateTime);
+        const dateStr = dateObj.toISOString().split("T")[0]; // e.g. "2025-01-01"
+        return {
+          date: dateStr,
+          happiness: parsedEmotions.happiness ?? 0,
+          connection: parsedEmotions.connection ?? 0,
+          productivity: parsedEmotions.productivity ?? 0,
+        };
+      });
+
+      //    b) entryHistoryData: { date, timeValue }
+      //       timeValue = hour of the day, 0-23
+      entryHistoryData = chartEntries.map((row) => {
+        const dateObj = new Date(row.dateTime);
+        const dateStr = dateObj.toISOString().split("T")[0];
+        return {
+          date: dateStr,
+          timeValue: dateObj.getHours(), // hour from 0-23
+        };
+      });
+    }
+
+    // Return AI text plus chart data if requested
+    return res.status(200).json({
+      aiResponse: aiText,
+      emotionData,
+      entryHistoryData,
+    });
   } catch (error) {
     console.error("Error in analyze handler:", error);
     return res.status(500).json({ error: "Internal server error" });
