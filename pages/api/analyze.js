@@ -33,6 +33,11 @@ export default async function handler(req, res) {
       [token.email]
     );
 
+    // If no entries yet, respond with no entry message
+    if (entries.length === 0) {
+      return res.status(200).json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
+    }
+
     // 4) Construct the prompt
     //    a) Summaries with date
     //    b) The conversation so far
@@ -72,7 +77,7 @@ If you see any seriously concerning behavior, make sure to remind the user in an
     const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const aiText = (await response.text()).trim();
-
+    console.log(aiText);
     return res.status(200).json({ aiResponse: aiText });
   } catch (error) {
     console.error("Error in analyze handler:", error);

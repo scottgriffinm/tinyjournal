@@ -487,7 +487,7 @@ const Login = () => {
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-md mx-auto space-y-8 pt-8">
         <h1 className="text-2xl mb-10">tiny journal</h1>
-        <h1 className="text-2xl mb-12">Welcome back.</h1>
+        <h1 className="text-2xl mb-12">The lightweight journal with ai.</h1>
 
         {/* Google Login/Signup */}
         <button
@@ -529,218 +529,320 @@ pages/analyze.jsx:
 
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowUp, ArrowLeft, BookText, TrendingUp, Sparkles, Rocket, Smile } from 'lucide-react';
+import {
+  ArrowUp,
+  ArrowLeft,
+  BookText,
+  TrendingUp,
+  Sparkles,
+  Rocket,
+  Smile,
+  Plus, 
+} from 'lucide-react';
 
+// "Bouncing dots" used for both waiting and typing:
 const TypingAnimation = () => (
-    <div className="flex space-x-1.5 px-4 py-3">
-        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
-        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
-        <div className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
-    </div>
+  <div className="flex space-x-1.5 px-4 py-3">
+    <div
+      className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]"
+      style={{ animationDelay: '0s' }}
+    />
+    <div
+      className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]"
+      style={{ animationDelay: '0.2s' }}
+    />
+    <div
+      className="w-2 h-2 bg-neutral-500 rounded-full animate-[bounce_1s_infinite]"
+      style={{ animationDelay: '0.4s' }}
+    />
+  </div>
 );
 
 const SuggestionButton = ({ icon: Icon, text, onClick }) => (
-    <button
-        onClick={onClick}
-        className="flex flex-col items-center p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors text-center space-y-3 border border-neutral-700"
-    >
-        <Icon className="w-6 h-6 text-neutral-400" />
-        <span className="text-sm">{text}</span>
-    </button>
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800
+               transition-colors text-center space-y-3 border border-neutral-700"
+  >
+    <Icon className="w-6 h-6 text-neutral-400" />
+    <span className="text-sm">{text}</span>
+  </button>
 );
 
-const Analyze = () => {
-    const router = useRouter();
-    const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const [typingMessage, setTypingMessage] = useState('');
-    const messagesEndRef = useRef(null);
-    const isFirstCharacter = useRef(true);
-
-    const suggestions = [
-        { icon: TrendingUp, text: "Analyze trends in my journal", response: "I'll analyze the patterns and trends in your journal entries. What specific aspects would you like me to focus on?" },
-        { icon: Sparkles, text: "Tell me something interesting about myself", response: "I'd be happy to explore your data and find interesting insights. What areas of your life would you like to learn more about?" },
-        { icon: Rocket, text: "Motivate me", response: "Let's look at your progress and achievements to help motivate you. Would you like to focus on recent wins or set new goals?" },
-        { icon: Smile, text: "Give me advice on how to be happier", response: "I can help identify patterns and suggest personalized strategies for increasing your happiness. Shall we start by looking at what activities correlate with your positive moments?" }
-    ];
-
-    const typeMessage = async (message, delay = 30) => {
-        setIsTyping(true);
-        setTypingMessage('');
-        isFirstCharacter.current = true;
-
-        let displayedMessage = '';
-        const chunkSize = 3;
-
-        for (let i = 0; i < message.length; i += chunkSize) {
-            displayedMessage = message.slice(0, i + chunkSize);
-            setTypingMessage(displayedMessage);
-
-            if (isFirstCharacter.current) {
-                setTimeout(() => {
-                    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
-                }, 50);
-                isFirstCharacter.current = false;
-            }
-
-            await new Promise(resolve => requestAnimationFrame(() => {
-                setTimeout(resolve, delay);
-            }));
-        }
-
-        setIsTyping(false);
-        setTypingMessage('');
-        setMessages(prev => [...prev, { type: 'bot', content: message }]);
-    };
-
-    const handleSend = async (messageText = input) => {
-        if (!messageText.trim()) return;
-
-        const userMessage = messageText;
-        setInput('');
-        const textarea = document.querySelector('textarea');
-        if (textarea) {
-            textarea.style.height = '44px';
-        }
-        setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
-        }, 50);
-
-        const suggestion = suggestions.find(s => s.text === messageText);
-        const response = suggestion ? suggestion.response : "I can help analyze your trends, life statistics, and provide advice based on your data. What specifically would you like to know about?";
-        await typeMessage(response);
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
-
-    return (
-        <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
-            {/* Floating Back Button */}
-            <button className="absolute top-4 left-4 hover:bg-neutral-800 p-2 rounded transition-colors z-10 bg-neutral-900" onClick={() => router.push("/")}>
-                <ArrowLeft className="w-5 h-5" />
-            </button>
-
-            {/* Scrollable Messages Container */}
-            <div
-                className="flex-1 overflow-y-auto p-4 space-y-4"
-                style={{ overscrollBehavior: 'contain' }}
-            >
-                {messages.length === 0 ? (
-                    <div className="h-full flex flex-col justify-center">
-                        <h2 className="text-center text-lg mb-8"></h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
-                            {suggestions.map((suggestion, index) => (
-                                <SuggestionButton
-                                    key={index}
-                                    icon={suggestion.icon}
-                                    text={suggestion.text}
-                                    onClick={() => handleSend(suggestion.text)}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        {messages.map((message, index) => (
-                            <div
-                                key={index}
-                                className={`flex w-full ${message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'}`}
-                            >
-                                {message.type === 'bot' && (
-                                    <div className="mt-2">
-                                        <BookText className="w-5 h-5 text-neutral-500" />
-                                    </div>
-                                )}
-                                <div
-                                    className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${message.type === 'user'
-                                            ? 'bg-neutral-800/50'
-                                            : 'bg-neutral-800/30 border border-neutral-700'
-                                        }`}
-                                >
-                                    <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
-                                        {message.content}
-                                    </pre>
-                                </div>
-                            </div>
-                        ))}
-                    </>
-                )}
-                {isTyping && (
-                    <div className="flex w-full justify-start items-start space-x-2">
-                        <div className="mt-2">
-                            <BookText className="w-5 h-5 text-neutral-500" />
-                        </div>
-                        <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-                            {typingMessage ? (
-                                <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">
-                                    {typingMessage}
-                                </pre>
-                            ) : (
-                                <TypingAnimation />
-                            )}
-                        </div>
-                    </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="border-t border-neutral-800 p-4 bg-neutral-900">
-                <div className="flex items-end space-x-2">
-                    <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="ask about your journal..."
-                        className="flex-1 bg-neutral-800/50 p-3 rounded resize-none focus:outline-none min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
-                        style={{
-                            lineHeight: '20px',
-                            height: '44px',
-                            minHeight: '44px',
-                        }}
-                        onInput={(e) => {
-                            const textarea = e.target;
-                            textarea.style.height = '44px';
-                            textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
-                        }}
-                    />
-                    <button
-                        onClick={() => handleSend()}
-                        disabled={!input.trim()}
-                        className="bg-neutral-800/50 p-3 rounded hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:hover:bg-neutral-800"
-                    >
-                        <ArrowUp className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+const parseTextFormatting = (text) => {
+  // First handle bold (**text**)
+  let formattedText = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // Then handle italic (*text*)
+  formattedText = formattedText.replace(/\*(.+?)\*/g, '<i>$1</i>');
+  formattedText = formattedText.replace(/\*/g, '-');
+  return formattedText;
 };
 
-// Redirect users to login page if not signed in
-export async function getServerSideProps(context) {
-    const { getSession } = await import("next-auth/react");
-    const session = await getSession(context);
+const Analyze = () => {
+  const router = useRouter();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [typingMessage, setTypingMessage] = useState('');
 
-    if (!session) {
-        return {
-            redirect: {
-                destination: "/login",
-                permanent: false,
-            },
-        };
+  // State to show "bouncing dots" while we await the server
+  const [isFetching, setIsFetching] = useState(false);
+
+  // State to show the typewriter effect once we have the server's response
+  const [isTyping, setIsTyping] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const isFirstCharacter = useRef(true);
+
+  // Quick suggestions
+  const suggestions = [
+    { icon: TrendingUp, text: 'Analyze trends in my journal' },
+    { icon: Sparkles, text: 'Tell me something interesting about myself' },
+    { icon: Rocket, text: 'Motivate me' },
+    { icon: Smile, text: 'Give me advice on how to be happier' },
+  ];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+  };
+
+  const typeMessage = async (fullText, delay = 30) => {
+    const parsedText = parseTextFormatting(fullText); // parse text formatting
+    setIsTyping(true);
+    setTypingMessage(''); // Reset current typing message
+    isFirstCharacter.current = true;
+  
+    let displayedMessage = ''; // Raw text being typed
+    let formattedMessage = ''; // Parsed HTML being rendered
+    const chunkSize = 3;
+  
+    for (let i = 0; i < fullText.length; i += chunkSize) {
+      displayedMessage = fullText.slice(0, i + chunkSize); // Progressively slice raw text
+      formattedMessage = parseTextFormatting(displayedMessage); // Apply parsing to the current slice
+      setTypingMessage(formattedMessage); // Update state with formatted HTML
+  
+      if (isFirstCharacter.current) {
+        setTimeout(scrollToBottom, 50);
+        isFirstCharacter.current = false;
+      }
+  
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => {
+          setTimeout(resolve, delay);
+        })
+      );
     }
+  
+    setIsTyping(false);
+    setTypingMessage('');
+  
+    // Append the final formatted message to the messages array
+    setMessages((prev) => [
+      ...prev,
+      { type: 'bot', content: parsedText },
+    ]);
+  };
 
+  const handleSend = async (messageText = input) => {
+    if (!messageText.trim()) return;
+
+    // Step 1: Display user's message in the chat
+    const userMessage = messageText.trim();
+    setInput('');
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.style.height = '44px';
+    }
+    setMessages((prev) => [...prev, { type: 'user', content: userMessage }]);
+    setTimeout(scrollToBottom, 50);
+
+    // Step 2: Show "bouncing dots" while awaiting the server
+    setIsFetching(true);
+
+    // Step 3: Call /api/analyze to get AI response
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages, // the entire conversation so far
+          userMessage, // the latest user message
+        }),
+      });
+
+      if (!res.ok) {
+        console.error('Failed to call /api/analyze:', await res.text());
+        return;
+      }
+
+      const data = await res.json();
+      if (data.aiResponse) {
+        setIsFetching(false);
+        await typeMessage(data.aiResponse);
+      }
+    } catch (error) {
+      console.error('Error calling /api/analyze:', error);
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  /**
+   * Clears the conversation, resetting state so suggestions reappear.
+   */
+  const handleNewConversation = () => {
+    setMessages([]);
+    setInput('');
+    setTypingMessage('');
+    setIsFetching(false);
+    setIsTyping(false);
+  };
+
+  return (
+    <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
+      {/* Container for both buttons */}
+      <div className="absolute top-4 left-4 flex space-x-2 z-10">
+        {/* Back Button */}
+        <button
+          className="hover:bg-neutral-800 p-2 rounded transition-colors bg-neutral-900"
+          onClick={() => router.push('/')}
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
+        {/* New Conversation Button (Plus Icon) */}
+        <button
+          className="hover:bg-neutral-800 p-2 rounded transition-colors bg-neutral-900"
+          onClick={handleNewConversation}
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Scrollable Messages Container */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ overscrollBehavior: 'contain' }}>
+        {/* If no messages, show suggestions */}
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+              {suggestions.map((suggestion, index) => (
+                <SuggestionButton
+                  key={index}
+                  icon={suggestion.icon}
+                  text={suggestion.text}
+                  onClick={() => handleSend(suggestion.text)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex w-full ${
+                  message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'
+                }`}
+              >
+                {message.type === 'bot' && (
+                  <div className="mt-2">
+                    <BookText className="w-5 h-5 text-neutral-500" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${
+                    message.type === 'user'
+                      ? 'bg-neutral-800/50'
+                      : 'bg-neutral-800/30 border border-neutral-700'
+                  }`}
+                >
+                   <div
+    className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+    dangerouslySetInnerHTML={{ __html: message.content }}
+  ></div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Display "bouncing dots" if we are waiting for the server,
+            or if we are currently typing out the final AI response. */}
+        {(isFetching || isTyping) && (
+          <div className="flex w-full justify-start items-start space-x-2">
+            <div className="mt-2">
+              <BookText className="w-5 h-5 text-neutral-500" />
+            </div>
+            <div className="bg-neutral-800/50 border border-neutral-700 rounded">
+            {isTyping && typingMessage ? (
+  <div
+    className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+    dangerouslySetInnerHTML={{ __html: typingMessage }}
+  ></div>
+) : (
+  <TypingAnimation />
+)}
+            </div>
+          </div>
+        )}
+
+        {/* Dummy ref to scroll into view */}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t border-neutral-800 p-4 bg-neutral-900">
+        <div className="flex items-end space-x-2">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask about your journal..."
+            className="flex-1 bg-neutral-800/50 p-3 rounded resize-none focus:outline-none
+                       min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
+            style={{ lineHeight: '20px', height: '44px', minHeight: '44px' }}
+            onInput={(e) => {
+              const textarea = e.target;
+              textarea.style.height = '44px';
+              textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
+            }}
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={!input.trim()}
+            className="bg-neutral-800/50 p-3 rounded hover:bg-neutral-800 transition-colors
+                       disabled:opacity-50 disabled:hover:bg-neutral-800"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export async function getServerSideProps(context) {
+  const { getSession } = await import('next-auth/react');
+  const session = await getSession(context);
+
+  if (!session) {
     return {
-        props: {},
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
     };
+  }
+
+  return {
+    props: {},
+  };
 }
 
 export default Analyze;
@@ -875,13 +977,12 @@ const Account = ({ userEmail }) => {
         expiryDate: null,
         isRenewing: false,
     });
-
+    
     const plans = [
         {
             name: "free",
             price: "$0/month",
             features: [
-                "Unlimited journal entries",
                 "Basic AI analysis",
                 "Limited analysis requests",
             ],
@@ -891,7 +992,6 @@ const Account = ({ userEmail }) => {
             name: "plus",
             price: "$5/month",
             features: [
-                "Unlimited journal entries",
                 "Advanced AI analysis",
                 "Increased analysis requests",
             ],
@@ -1135,10 +1235,63 @@ export default Account;
 --------------------------------------------------------------------------------
 pages/api/create-entry.js:
 
+// ==============================
+// Imports
+// ==============================
 import pool from '../../lib/db';
 import { getToken } from 'next-auth/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// ==============================
+// Helper Functions
+// ==============================
+
+/**
+ * Generates a summary using the provided generative AI model and prompt.
+ * @param {object} model - The generative AI model instance.
+ * @param {string} prompt - The prompt to generate a response for.
+ * @returns {Promise<string>} - The generated response as text.
+ */
+async function generateSummary(model, prompt) {
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = await response.text();
+  return text.trim();
+}
+
+/**
+ * Prepares an emotion analysis prompt for the given journal entry text.
+ * @param {string} text - The journal entry to analyze.
+ * @returns {string} - The emotion analysis prompt.
+ */
+function prepareEmotionAnalysisPrompt(text) {
+  return `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
+    The emotions are happiness, connection, and productivity, and they should be gauged in a scale of intensity from 0-1 with floating point numbers.
+
+    Happiness: A state of well-being and contentment, often characterized by feelings of joy, satisfaction, and fulfillment.
+    Connection: The sense of being emotionally or socially linked to others, fostering meaningful relationships and shared understanding.
+    Productivity: The ability to efficiently achieve desired outcomes or complete tasks, often measured by the quality and quantity of output in a given time.
+
+    Example json dict:
+    {
+    "happiness": .75,
+    "connection": .96,
+    "productivity": .83,
+    }
+
+    Journal entry: ${text}`;
+}
+
+
+// ==============================
+// Main Handler
+// ==============================
+
+/**
+ * API route handler for creating a journal entry.
+ * Supports POST method only.
+ */
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -1169,8 +1322,28 @@ export default async function handler(req, res) {
     };
 
     // Generate short summary
-    const shortSummaryPrompt = `Provide a concise summary for the following journal entry. The summary should be at most 20 characters and end with a characteristic emoji:\n\n${text}`;
-    const shortSummary = await generateSummary(shortSummaryPrompt);
+    const shortSummary = text.slice(0,28) + "...";
+
+    // Get emotion values from 0-1 for happiness, connection, and productivity
+    const emotionValuesPrompt = `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
+    The emotions are happiness, connection, and productivity, and they should be gauged in a scale of intensity from 0-1 with floating point numbers.
+
+    Happiness: A state of well-being and contentment, often characterized by feelings of joy, satisfaction, and fulfillment.
+    Connection: The sense of being emotionally or socially linked to others, fostering meaningful relationships and shared understanding.
+    Productivity: The ability to efficiently achieve desired outcomes or complete tasks, often measured by the quality and quantity of output in a given time.
+
+    Example json dict:
+    {
+    "happiness": .75,
+    "connection": .96,
+    "productivity": .83,
+    }
+    
+    Journal entry: ${text}
+    `;
+
+    const emotionValuesDict = await generateSummary(emotionValuesPrompt);
+    console.log(emotionValuesDict);
 
     // Generate long summary
     const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
@@ -1320,6 +1493,95 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error fetching entry:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+--------------------------------------------------------------------------------
+pages/api/analyze.js:
+
+// pages/api/analyze.js
+import { getToken } from "next-auth/jwt";
+import pool from "../../lib/db";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", ["POST"]);
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    // 1) Validate the user session:
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.email) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // 2) Parse request body to get conversation messages + new user message
+    const { messages, userMessage } = req.body;
+    if (!messages || !Array.isArray(messages) || !userMessage) {
+      return res.status(400).json({ error: "Invalid request body" });
+    }
+
+    // 3) Fetch the user’s entries (date + longSummary) from the DB
+    const [entries] = await pool.query(
+      `SELECT 
+         DATE_FORMAT(dateTime, "%m/%d/%y") as formattedDate,
+         longSummary
+       FROM entries
+       WHERE email = ?
+       ORDER BY dateTime ASC`,
+      [token.email]
+    );
+
+    if (entries.length === 0) {
+      return res.status(200).json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
+    }
+
+    // 4) Construct the prompt
+    //    a) Summaries with date
+    //    b) The conversation so far
+    //    c) The user’s current message
+    let summariesSection = "These are summaries of the users journal entries:\n";
+    entries.forEach((entry, i) => {
+      summariesSection += `Entry date: ${entry.formattedDate}]\n Summary: ${entry.longSummary}\n\n`;
+    });
+
+    let conversationSection = "Previous messages in this conversation:\n";
+    messages.forEach((msg) => {
+      if (msg.type === "user") {
+        conversationSection += `User: ${msg.content}\n`;
+      } else {
+        // Bot or AI messages
+        conversationSection += `AI: ${msg.content}\n`;
+      }
+    });
+
+    const finalPrompt = `
+You are analyzing a user's journaling data. Make sure to keep a helpful and caring attitude. You are an AI but you care about the person you're talking to.
+
+${summariesSection}
+
+${conversationSection}
+
+Now the user is asking:
+"${userMessage}"
+
+Please provide a thoughtful, relevant, and concise response based on the user's journal summaries past messages, and current message. Make sure to be thoughful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
+If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. They are not alone.
+    `.trim();
+
+    // 5) Call the Google Generative AI "gemini-1.5-flash" model
+    const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+    const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(finalPrompt);
+    const response = await result.response;
+    const aiText = (await response.text()).trim();
+    console.log(aiText);
+    return res.status(200).json({ aiResponse: aiText });
+  } catch (error) {
+    console.error("Error in analyze handler:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

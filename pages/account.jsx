@@ -23,13 +23,12 @@ const Account = ({ userEmail }) => {
         expiryDate: null,
         isRenewing: false,
     });
-
+    
     const plans = [
         {
             name: "free",
             price: "$0/month",
             features: [
-                "Unlimited journal entries",
                 "Basic AI analysis",
                 "Limited analysis requests",
             ],
@@ -39,7 +38,6 @@ const Account = ({ userEmail }) => {
             name: "plus",
             price: "$5/month",
             features: [
-                "Unlimited journal entries",
                 "Advanced AI analysis",
                 "Increased analysis requests",
             ],

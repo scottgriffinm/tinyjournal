@@ -8,7 +8,7 @@ import {
   Sparkles,
   Rocket,
   Smile,
-  Plus, // <--- Import Plus
+  Plus, 
 } from 'lucide-react';
 
 // "Bouncing dots" used for both waiting and typing:
@@ -40,6 +40,15 @@ const SuggestionButton = ({ icon: Icon, text, onClick }) => (
   </button>
 );
 
+const parseTextFormatting = (text) => {
+  // First handle bold (**text**)
+  let formattedText = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // Then handle italic (*text*)
+  formattedText = formattedText.replace(/\*(.+?)\*/g, '<i>$1</i>');
+  formattedText = formattedText.replace(/\*/g, '-');
+  return formattedText;
+};
+
 const Analyze = () => {
   const router = useRouter();
   const [messages, setMessages] = useState([]);
@@ -68,34 +77,40 @@ const Analyze = () => {
   };
 
   const typeMessage = async (fullText, delay = 30) => {
+    const parsedText = parseTextFormatting(fullText); // parse text formatting
     setIsTyping(true);
-    setTypingMessage('');
+    setTypingMessage(''); // Reset current typing message
     isFirstCharacter.current = true;
-
-    let displayedMessage = '';
+  
+    let displayedMessage = ''; // Raw text being typed
+    let formattedMessage = ''; // Parsed HTML being rendered
     const chunkSize = 3;
-
+  
     for (let i = 0; i < fullText.length; i += chunkSize) {
-      displayedMessage = fullText.slice(0, i + chunkSize);
-      setTypingMessage(displayedMessage);
-
+      displayedMessage = fullText.slice(0, i + chunkSize); // Progressively slice raw text
+      formattedMessage = parseTextFormatting(displayedMessage); // Apply parsing to the current slice
+      setTypingMessage(formattedMessage); // Update state with formatted HTML
+  
       if (isFirstCharacter.current) {
         setTimeout(scrollToBottom, 50);
         isFirstCharacter.current = false;
       }
-
+  
       await new Promise((resolve) =>
         requestAnimationFrame(() => {
           setTimeout(resolve, delay);
         })
       );
     }
-
+  
     setIsTyping(false);
     setTypingMessage('');
-
-    // Append final message to our messages array
-    setMessages((prev) => [...prev, { type: 'bot', content: fullText }]);
+  
+    // Append the final formatted message to the messages array
+    setMessages((prev) => [
+      ...prev,
+      { type: 'bot', content: parsedText },
+    ]);
   };
 
   const handleSend = async (messageText = input) => {
@@ -218,9 +233,10 @@ const Analyze = () => {
                       : 'bg-neutral-800/30 border border-neutral-700'
                   }`}
                 >
-                  <pre className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden">
-                    {message.content}
-                  </pre>
+                   <div
+    className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+    dangerouslySetInnerHTML={{ __html: message.content }}
+  ></div>
                 </div>
               </div>
             ))}
@@ -235,11 +251,14 @@ const Analyze = () => {
               <BookText className="w-5 h-5 text-neutral-500" />
             </div>
             <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-              {isTyping && typingMessage ? (
-                <pre className="whitespace-pre-wrap font-mono text-sm px-4 py-2">{typingMessage}</pre>
-              ) : (
-                <TypingAnimation />
-              )}
+            {isTyping && typingMessage ? (
+  <div
+    className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+    dangerouslySetInnerHTML={{ __html: typingMessage }}
+  ></div>
+) : (
+  <TypingAnimation />
+)}
             </div>
           </div>
         )}

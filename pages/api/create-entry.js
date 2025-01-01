@@ -1,7 +1,60 @@
+// ==============================
+// Imports
+// ==============================
 import pool from '../../lib/db';
 import { getToken } from 'next-auth/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// ==============================
+// Helper Functions
+// ==============================
+
+/**
+ * Generates a summary using the provided generative AI model and prompt.
+ * @param {object} model - The generative AI model instance.
+ * @param {string} prompt - The prompt to generate a response for.
+ * @returns {Promise<string>} - The generated response as text.
+ */
+async function generateSummary(model, prompt) {
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = await response.text();
+  return text.trim();
+}
+
+/**
+ * Prepares an emotion analysis prompt for the given journal entry text.
+ * @param {string} text - The journal entry to analyze.
+ * @returns {string} - The emotion analysis prompt.
+ */
+function prepareEmotionAnalysisPrompt(text) {
+  return `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
+    The emotions are happiness, connection, and productivity, and they should be gauged in a scale of intensity from 0-1 with floating point numbers.
+
+    Happiness: A state of well-being and contentment, often characterized by feelings of joy, satisfaction, and fulfillment.
+    Connection: The sense of being emotionally or socially linked to others, fostering meaningful relationships and shared understanding.
+    Productivity: The ability to efficiently achieve desired outcomes or complete tasks, often measured by the quality and quantity of output in a given time.
+
+    Example json dict:
+    {
+    "happiness": .75,
+    "connection": .96,
+    "productivity": .83,
+    }
+
+    Journal entry: ${text}`;
+}
+
+
+// ==============================
+// Main Handler
+// ==============================
+
+/**
+ * API route handler for creating a journal entry.
+ * Supports POST method only.
+ */
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -32,8 +85,28 @@ export default async function handler(req, res) {
     };
 
     // Generate short summary
-    const shortSummaryPrompt = `Provide a concise summary for the following journal entry. The summary should be at most 20 characters and end with a characteristic emoji:\n\n${text}`;
-    const shortSummary = await generateSummary(shortSummaryPrompt);
+    const shortSummary = text.slice(0,28) + "...";
+
+    // Get emotion values from 0-1 for happiness, connection, and productivity
+    const emotionValuesPrompt = `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
+    The emotions are happiness, connection, and productivity, and they should be gauged in a scale of intensity from 0-1 with floating point numbers.
+
+    Happiness: A state of well-being and contentment, often characterized by feelings of joy, satisfaction, and fulfillment.
+    Connection: The sense of being emotionally or socially linked to others, fostering meaningful relationships and shared understanding.
+    Productivity: The ability to efficiently achieve desired outcomes or complete tasks, often measured by the quality and quantity of output in a given time.
+
+    Example json dict:
+    {
+    "happiness": .75,
+    "connection": .96,
+    "productivity": .83,
+    }
+    
+    Journal entry: ${text}
+    `;
+
+    const emotionValuesDict = await generateSummary(emotionValuesPrompt);
+    console.log(emotionValuesDict);
 
     // Generate long summary
     const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
