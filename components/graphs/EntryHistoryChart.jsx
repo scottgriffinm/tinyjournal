@@ -6,32 +6,25 @@ import {
   YAxis,
   ResponsiveContainer,
   ZAxis,
-  CartesianGrid
+  CartesianGrid,
 } from 'recharts';
 
-const JournalTimingChart = () => {
-  // Generate synthetic data for 6 months of entries
-  const generateData = () => {
-    const data = [];
-    const startDate = new Date('2023-10-01');
-    const endDate = new Date('2024-03-31');
-    
-    // Generate 30 random entries
-    for (let i = 0; i < 30; i++) {
-      const randomDate = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
-      // Now allowing for full 24-hour distribution
-      const randomHour = Math.random() * 24;
-      
-      data.push({
-        date: randomDate.toISOString().split('T')[0],
-        timeValue: randomHour
-      });
-    }
-    
-    return data.sort((a, b) => new Date(a.date) - new Date(b.date));
-  };
-
-  const chartData = generateData();
+/**
+ * EntryHistoryChart Component
+ * @param {Array} data - Array of objects representing the chart data. Each object should have the following structure:
+ * [
+ *   { date: 'YYYY-MM-DD', timeValue: number },
+ *   ...
+ * ]
+ */
+const EntryHistoryChart = ({ data }) => {
+  if (!data || !data.length) {
+    return (
+      <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
+        <h3 className="text-neutral-300 font-mono">No data available</h3>
+      </div>
+    );
+  }
 
   const formatXAxis = (dateStr) => {
     const date = new Date(dateStr);
@@ -48,7 +41,7 @@ const JournalTimingChart = () => {
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
       <div className="flex items-center mb-6">
-        <h3 className="text-neutral-300 font-mono">entries</h3>
+        <h3 className="text-neutral-300 font-mono">Entry Timing</h3>
       </div>
       <div className="h-96">
         <ResponsiveContainer width="100%" height="100%">
@@ -56,8 +49,8 @@ const JournalTimingChart = () => {
             margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
-            <XAxis 
-              dataKey="date" 
+            <XAxis
+              dataKey="date"
               stroke="#737373"
               tickFormatter={formatXAxis}
             />
@@ -69,8 +62,8 @@ const JournalTimingChart = () => {
               ticks={[4, 12, 20]}
             />
             <ZAxis range={[50, 50]} />
-            <Scatter 
-              data={chartData} 
+            <Scatter
+              data={data}
               fill="#d4d4d4"
             />
           </ScatterChart>
@@ -80,6 +73,4 @@ const JournalTimingChart = () => {
   );
 };
 
-export default JournalTimingChart;
-
-
+export default EntryHistoryChart;
