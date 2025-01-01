@@ -26,9 +26,12 @@ const EntryHistoryChart = ({ data }) => {
     );
   }
 
+  // Remove duplicate dates for X-axis
+  const uniqueDates = [...new Set(data.map((item) => item.date))];
+
   const formatXAxis = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }).toLowerCase();
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toLowerCase();
   };
 
   const formatYAxis = (timeValue) => {
@@ -41,19 +44,19 @@ const EntryHistoryChart = ({ data }) => {
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
       {/* Centered Legend */}
-      <div className="flex justify-center items-center mb-4">
-        <h3 className="text-white font-mono text-sm">Entries</h3>
+      <div className="flex justify-center items-center mb-6">
+        <h3 className="text-white font-mono text-sm">History</h3>
       </div>
       {/* Chart Container */}
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart
-            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-          >
+          <ScatterChart margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
             <XAxis
               dataKey="date"
               stroke="#737373"
+              scale="point" // Ensures no duplicate ticks
+              ticks={uniqueDates} // Use unique dates as ticks
               tickFormatter={formatXAxis}
             />
             <YAxis
@@ -64,10 +67,7 @@ const EntryHistoryChart = ({ data }) => {
               ticks={[4, 12, 20]}
             />
             <ZAxis range={[50, 50]} />
-            <Scatter
-              data={data}
-              fill="#d4d4d4"
-            />
+            <Scatter data={data} fill="#d4d4d4" />
           </ScatterChart>
         </ResponsiveContainer>
       </div>

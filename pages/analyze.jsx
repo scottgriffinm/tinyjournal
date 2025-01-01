@@ -284,16 +284,18 @@ const Analyze = () => {
                         />
                       </div>
                       {/* Charts below the message bubble */}
-                      {message.emotionData && (
-                        <div className="mt-2">
-                          <EntryEmotionGraph data={message.emotionData} />
-                        </div>
-                      )}
-                      {message.entryHistoryData && (
-                        <div className="mt-2">
-                          <EntryHistoryChart data={message.entryHistoryData} />
-                        </div>
-                      )}
+                      <div className="mt-2 flex flex-wrap gap-4">
+                        {message.emotionData && (
+                          <div className="flex-1 min-w-[300px]">
+                            <EntryEmotionGraph data={message.emotionData} />
+                          </div>
+                        )}
+                        {message.entryHistoryData && (
+                          <div className="flex-1 min-w-[300px]">
+                            <EntryHistoryChart data={message.entryHistoryData} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
