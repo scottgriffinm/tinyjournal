@@ -14,7 +14,7 @@ import {
 } from "../components/ui/alert-dialog";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "subscriptionStatus";
-const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_SUBSCRIPTION_TTL;
+const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
