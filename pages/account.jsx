@@ -29,16 +29,14 @@ const Account = ({ userEmail }) => {
             name: "free",
             price: "$0/month",
             features: [
-                "Basic AI analysis",
                 "Limited analysis requests",
             ],
             current: subscription.tier === "free",
         },
         {
             name: "plus",
-            price: "$5/month",
+            price: "$3/month",
             features: [
-                "Advanced AI analysis",
                 "Increased analysis requests",
             ],
             current: subscription.tier === "plus",
