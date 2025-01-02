@@ -11,7 +11,7 @@ const Login = () => {
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-md mx-auto space-y-8 pt-8">
         <h1 className="text-2xl mb-10">tiny journal</h1>
-        <h1 className="text-2xl mb-12">The simple journal with ai.</h1>
+        <h1 className="text-2xl mb-12">Welcome back.</h1>
 
         {/* Google Login/Signup */}
         <button
