@@ -606,6 +606,8 @@ const NewEntry = () => {
   const [entry, setEntry] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showAnalyzeDialog, setShowAnalyzeDialog] = useState(false); // New state for second dialog
+  const [isSaving, setIsSaving] = useState(false); // New state for loader
 
   const handleDelete = () => {
     setEntry('');
@@ -617,6 +619,7 @@ const NewEntry = () => {
     const shortSummary = entry.slice(0, 10);
     const longSummary = entry.slice(0, 20);
 
+    setIsSaving(true); // Start loader
     try {
       const response = await fetch('/api/create-entry', {
         method: 'POST',
@@ -628,21 +631,31 @@ const NewEntry = () => {
         console.log('Entry successfully saved!');
         setEntry('');
         setShowSaveDialog(false);
-        router.push("/");
+        setShowAnalyzeDialog(true); // Show second dialog
       } else {
         const errorData = await response.json();
         console.error('Error saving entry:', errorData.error);
       }
     } catch (error) {
       console.error('Error saving entry:', error);
+    } finally {
+      setIsSaving(false); // Stop loader
     }
   };
 
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono relative">
+
+      {/* Saving loader */}
+      {isSaving && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+    <div className="h-10 w-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
+)}
+
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
-      <button
+        <button
           onClick={() => entry.trim() && setShowDeleteDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
@@ -656,7 +669,7 @@ const NewEntry = () => {
         >
           <Save className="w-5 h-5 text-neutral-400" />
         </button>
-      
+
       </div>
 
       {/* Full-screen textarea */}
@@ -715,6 +728,36 @@ const NewEntry = () => {
               onClick={handleSave}
             >
               save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Analyze Confirmation Dialog */}
+      <AlertDialog open={showAnalyzeDialog} onOpenChange={setShowAnalyzeDialog}>
+        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-neutral-300">want to talk about your entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">you can analyze your entry or return to the main page.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
+              onClick={() => {
+                setShowAnalyzeDialog(false);
+                router.push('/');
+              }}
+            >
+              No
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
+              onClick={() => {
+                setShowAnalyzeDialog(false);
+                router.push('/analyze?prompt=What%20do%20you%20think%20about%20my%20most%20recent%20entry?');
+              }}
+            >
+              Yes
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -879,7 +922,7 @@ export default Login;
 --------------------------------------------------------------------------------
 pages/analyze.jsx:
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
   ArrowUp,
@@ -969,7 +1012,7 @@ const Analyze = () => {
    * Type out the final text character by character, but
    * ABORT if typingAbortRef.current = true.
    */
-  const typeMessage = async (fullText, delay = 30) => {
+  const typeMessage = async (fullText, delay = 20) => {
     // Reset the abort flag at the start
     typingAbortRef.current = false;
 
@@ -1129,6 +1172,14 @@ const Analyze = () => {
     typingAbortRef.current = false; // reset abort flag
   };
 
+  // Gather url query prompt
+  useEffect(() => {
+    const queryPrompt = router.query.prompt;
+    if (queryPrompt) {
+      setInput(decodeURIComponent(queryPrompt));
+    }
+  }, [router.query]);
+
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
       {/* Container for back + new-convo buttons */}
@@ -1241,10 +1292,15 @@ const Analyze = () => {
             <div className="mt-2">
               <BookText className="w-5 h-5 text-neutral-500" />
             </div>
-            <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-              {isTyping && typingMessage ? (
+            <div
+              className={`${typingMessage
+                  ? 'max-w-[80%] min-w-0 bg-neutral-800/30 border border-neutral-700 rounded px-4 py-2'
+                  : 'bg-neutral-800/50 border border-neutral-700 rounded'
+                }`}
+            >
+              {typingMessage ? (
                 <div
-                  className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+                  className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
                   dangerouslySetInnerHTML={{ __html: typingMessage }}
                 ></div>
               ) : (
@@ -1318,6 +1374,9 @@ pages/index.jsx:
 import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { getCache, setCache } from "../lib/localStorageCache";
+const CACHE_KEY = "journalEntries";
+const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Home = () => {
   const router = useRouter();
@@ -1327,10 +1386,21 @@ const Home = () => {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
+        // Try loading cached entries first
+        const cached = getCache(CACHE_KEY);
+        console.log(`cached: ${cached}`);
+        if (cached) {
+          console.log(cached);
+          setEntries(cached);
+          return; // We have valid, unexpired data—stop here!
+        }
         const res = await fetch("/api/get-entries");
         const data = await res.json();
+        console.log(data.entries);
         if (res.ok) {
           setEntries(data.entries);
+          // Store data in localStorage with a TTL (in minutes)
+          setCache(CACHE_KEY, data.entries, CACHE_TTL * 60 * 1000); // 5 minutes
         } else {
           console.error("Error fetching entries:", data.error);
         }
@@ -1433,7 +1503,7 @@ import {
 } from "../components/ui/alert-dialog";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "subscriptionStatus";
-const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
+const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
@@ -1492,7 +1562,7 @@ const Account = ({ userEmail }) => {
                 tier: data.tier || "free",
                 expiryDate: data.expiryDate || null,
                 isRenewing: data.isRenewing || false
-              }, CACHE_SUBSCRIPTION_TTL * 60 * 1000); // 5 minutes
+              }, CACHE_TTL * 60 * 1000); // 5 minutes
             } else {
               console.error("Failed to fetch subscription status:", data.error);
             }
@@ -1729,7 +1799,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // ==============================
 // Helper Functions
 // ==============================
-
 
 /**
  * Extracts the JSON object from a response string.
@@ -2035,7 +2104,7 @@ Now the user is asking:
 "${userMessage}"
 
 Please provide a thoughtful, relevant, and concise response based on the user's journal summaries, past messages, and current message. Make sure to be thoughtful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
-If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. But only tell them once per conversation. They are not alone. Make sure to then actually try help them analyze any potential cognitive distortions and try to show them the brighter side of things.
+If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. But only tell them once per conversation. Make sure to then actually try help them analyze any potential cognitive distortions and try to show them the brighter side of things.
     `.trim();
 
     // Call the Google Generative AI "gemini-1.5-flash" model

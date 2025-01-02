@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowLeft } from "lucide-react";
+import { getCache, setCache } from "../lib/localStorageCache";
+
+const CACHE_KEY_PREFIX = "entry_";
 
 const EntryView = () => {
   const router = useRouter();
@@ -11,10 +14,22 @@ const EntryView = () => {
     if (!id) return;
 
     const fetchEntry = async () => {
+      const cacheKey = `${CACHE_KEY_PREFIX}${id}`;
+      const cachedEntry = getCache(cacheKey);
+
+      if (cachedEntry) {
+        // If the entry is found in the cache, use it
+        console.log("Cache hit for entry:", cachedEntry);
+        setEntry(cachedEntry);
+        return;
+      }
+
       try {
         const res = await fetch(`/api/get-entry?id=${id}`);
         const data = await res.json();
         if (res.ok) {
+          // Cache the fetched entry
+          setCache(cacheKey, data);
           setEntry(data);
         } else {
           console.error("Error fetching entry:", data.error);
