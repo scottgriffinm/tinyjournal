@@ -12,6 +12,9 @@ import {
     AlertDialogCancel,
     AlertDialogAction
 } from "../components/ui/alert-dialog";
+import { getCache, setCache } from "../lib/localStorageCache";
+const CACHE_KEY = "subscriptionStatus";
+const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_SUBSCRIPTION_TTL;
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
@@ -44,28 +47,45 @@ const Account = ({ userEmail }) => {
     ];
 
     useEffect(() => {
-        const fetchSubscriptionStatus = async () => {
-            try {
-                const response = await fetch("/api/get-subscription-status");
-                const data = await response.json();
-                if (response.ok) {
-                    setSubscription({
-                        tier: data.tier || "free",
-                        expiryDate: data.expiryDate || null,
-                        isRenewing: data.isRenewing || false,
-                    });
-                } else {
-                    console.error("Failed to fetch subscription status:", data.error);
-                }
-            } catch (error) {
-                console.error("Error fetching subscription status:", error);
-            } finally {
-                setLoading(false);
+        async function fetchSubscription() {
+          try {
+            // Try loading cached subscription first
+            const cached = getCache(CACHE_KEY);
+            console.log(`cached: ${cached}`);
+            if (cached) {
+              setSubscription(cached);
+              setLoading(false);
+              return; // We have valid, unexpired data—stop here!
             }
-        };
-
-        fetchSubscriptionStatus();
-    }, []);
+    
+            // Otherwise, fetch from server
+            const response = await fetch("/api/get-subscription-status");
+            const data = await response.json();
+    
+            if (response.ok) {
+              setSubscription({
+                tier: data.tier || "free",
+                expiryDate: data.expiryDate || null,
+                isRenewing: data.isRenewing || false,
+              });
+              // Store data in localStorage with a TTL (in minutes)
+              setCache(CACHE_KEY, {
+                tier: data.tier || "free",
+                expiryDate: data.expiryDate || null,
+                isRenewing: data.isRenewing || false
+              }, CACHE_SUBSCRIPTION_TTL * 60 * 1000); // 5 minutes
+            } else {
+              console.error("Failed to fetch subscription status:", data.error);
+            }
+          } catch (error) {
+            console.error("Error fetching subscription status:", error);
+          } finally {
+            setLoading(false);
+          }
+        }
+    
+        fetchSubscription();
+      }, []);
 
     const handleUpgrade = async () => {
         try {
