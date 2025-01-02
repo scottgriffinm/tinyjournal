@@ -8,6 +8,41 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+function getStartOfMonthUTC(timestamp, monthOffset = 0) {
+  // Convert the original timestamp to a “year, month” in UTC,
+  // then reconstruct a date that is always the 1st at 00:00 UTC.
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  return Date.UTC(year, month + monthOffset, 1, 0, 0, 0, 0); 
+}
+
+function generateMonthTicksUTC(start, end) {
+  const ticks = [];
+  let currentTime = start;
+
+  while (currentTime <= end) {
+    ticks.push(currentTime);
+    // Move forward by 1 month in UTC
+    const d = new Date(currentTime);
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    currentTime = d.getTime();
+  }
+
+  return ticks;
+}
+
+function formatXAxisUTC(timestamp) {
+  // Format using UTC so we never slip into the previous/next day
+  const date = new Date(timestamp);
+  // Example: “dec 24” or “jan 25”
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: '2-digit',
+    timeZone: 'UTC'
+  }).toLowerCase();
+}
+
 const EntryHistoryChart = ({ data }) => {
   if (!data || !data.length) {
     return (
@@ -17,58 +52,35 @@ const EntryHistoryChart = ({ data }) => {
     );
   }
 
-  // Convert each date string (YYYY-MM-DD) to a numeric timestamp
+  // Convert each date string to a numeric timestamp
   const chartData = data.map((item) => ({
     ...item,
-    dateValue: new Date(item.date).getTime(),
+    // If item.date is like "2025-01-01", parse in UTC so it doesn't shift
+    dateValue: Date.UTC(
+      parseInt(item.date.slice(0,4)),    // year
+      parseInt(item.date.slice(5,7)) - 1, // month is 0-based
+      parseInt(item.date.slice(8,10))    // day
+    )
   }));
 
-  // Determine the min/max timestamps for X-axis domain
+  // Determine min and max date values
   const dateValues = chartData.map((d) => d.dateValue);
   const minDate = Math.min(...dateValues);
   const maxDate = Math.max(...dateValues);
 
-  // Get the first day of the month before minDate and after maxDate
-  const getAdjustedBounds = (date, adjustMonth) => {
-    const adjustedDate = new Date(date);
-    adjustedDate.setDate(1); // Set to the 1st of the current month
-    adjustedDate.setMonth(adjustedDate.getMonth() + adjustMonth); // Adjust month
-    adjustedDate.setHours(0, 0, 0, 0); // Reset time to start of the day
-    return adjustedDate.getTime();
-  };
+  // Shift domain to the first of the *previous* month and *next* month
+  const adjustedMinDate = getStartOfMonthUTC(minDate, -1); 
+  const adjustedMaxDate = getStartOfMonthUTC(maxDate, 1);
 
-  const adjustedMinDate = getAdjustedBounds(minDate, -1); // First of month before minDate
-  const adjustedMaxDate = getAdjustedBounds(maxDate, 1); // First of month after maxDate
+  // Generate ticks at the start of each month in UTC
+  const monthTicks = generateMonthTicksUTC(adjustedMinDate, adjustedMaxDate);
 
-  // Build an array of ticks for the 1st day of each month between adjustedMinDate & adjustedMaxDate
-  const getMonthTicks = (start, end) => {
-    const ticks = [];
-    const current = new Date(start);
-    const last = new Date(end);
-
-    while (current.getTime() <= last.getTime()) {
-      ticks.push(current.getTime());
-      current.setMonth(current.getMonth() + 1); // Increment by 1 month
-    }
-    return ticks;
-  };
-
-  const monthTicks = getMonthTicks(adjustedMinDate, adjustedMaxDate);
-
-  // Format the X-axis labels to "mmm yy"
-  const formatXAxis = (timestamp) => {
-    const date = new Date(timestamp);
-    return date
-      .toLocaleDateString(undefined, { month: 'short', year: '2-digit' })
-      .toLowerCase();
-  };
-
-  // Y-axis configuration
+  // Y-axis ticks example
   const yTicks = [4, 12, 20];
-  const formatYAxis = (timeValue) => {
-    if (timeValue === 4) return '4 am';
-    if (timeValue === 12) return '12 pm';
-    if (timeValue === 20) return '8 pm';
+  const formatYAxis = (value) => {
+    if (value === 4) return '4 am';
+    if (value === 12) return '12 pm';
+    if (value === 20) return '8 pm';
     return '';
   };
 
@@ -81,28 +93,23 @@ const EntryHistoryChart = ({ data }) => {
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#404040"
-              horizontal={true}
-              vertical={true} // Enable vertical gridlines for all ticks
-            />
+            <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
             <XAxis
               dataKey="dateValue"
               type="number"
               scale="time"
               domain={[adjustedMinDate, adjustedMaxDate]}
               ticks={monthTicks}
-              tickFormatter={formatXAxis}
+              tickFormatter={formatXAxisUTC}
               stroke="#737373"
             />
             <YAxis
               dataKey="timeValue"
               type="number"
-              stroke="#737373"
-              tickFormatter={formatYAxis}
               domain={[0, 24]}
               ticks={yTicks}
+              tickFormatter={formatYAxis}
+              stroke="#737373"
             />
             <Scatter
               data={chartData}
