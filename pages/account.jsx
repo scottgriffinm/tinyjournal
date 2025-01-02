@@ -120,7 +120,7 @@ const Account = ({ userEmail }) => {
                         className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
                         onClick={() => router.push("/")}
                     />
-                    <span>Account</span>
+                    <span>Settings</span>
                 </h1>
 
                 <div className="space-y-6">

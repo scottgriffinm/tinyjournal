@@ -54,7 +54,7 @@ const Home = () => {
         <div className="space-y-4">
           <MenuItem label="new entry" path="/new-entry" />
           <MenuItem label="analyze" path="/analyze" />
-          <MenuItem label="account" path="/account" />
+          <MenuItem label="settings" path="/account" />
         </div>
 
         {/* Feed Items */}
