@@ -189,8 +189,68 @@ import {
 } from 'recharts';
 
 /**
+ * A helper function to group by date and average emotion scores
+ * @param {Array} data - The raw data array, e.g.
+ *  [
+ *    { date: '2025-01-01', happiness: 0.8, connection: 0.2, productivity: 0.1 },
+ *    { date: '2025-01-01', happiness: 0.7, connection: 0.3, productivity: 0.5 },
+ *    { date: '2025-01-02', happiness: 0.9, connection: 0.2, productivity: 0.8 },
+ *    ...
+ *  ]
+ * @returns {Array} - An array of objects, each containing a unique date and
+ * averaged emotion scores, e.g.
+ *  [
+ *    { date: '2025-01-01', happiness: 0.75, connection: 0.25, productivity: 0.3 },
+ *    { date: '2025-01-02', happiness: 0.9, connection: 0.2, productivity: 0.8 },
+ *    ...
+ *  ]
+ */
+function getAveragedDataByDate(data) {
+  // Use an object to group sums by date
+  const dailyTotals = {};
+
+  data.forEach((entry) => {
+    const { date, happiness, connection, productivity } = entry;
+    if (!dailyTotals[date]) {
+      dailyTotals[date] = {
+        totalHappiness: 0,
+        totalConnection: 0,
+        totalProductivity: 0,
+        count: 0,
+      };
+    }
+    dailyTotals[date].totalHappiness += happiness;
+    dailyTotals[date].totalConnection += connection;
+    dailyTotals[date].totalProductivity += productivity;
+    dailyTotals[date].count += 1;
+  });
+
+  // Convert the grouped data into an array and average them
+  const averagedData = Object.keys(dailyTotals).map((date) => {
+    const {
+      totalHappiness,
+      totalConnection,
+      totalProductivity,
+      count,
+    } = dailyTotals[date];
+
+    return {
+      date,
+      happiness: totalHappiness / count,
+      connection: totalConnection / count,
+      productivity: totalProductivity / count,
+    };
+  });
+
+  // Sort by date so the chart lines move chronologically
+  averagedData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  return averagedData;
+}
+
+/**
  * EmotionGraph Component
- * @param {Array} data - Array of objects representing the chart data. Each object should have the following structure:
+ * @param {Array} data - Array of objects with structure:
  * [
  *   { date: 'YYYY-MM-DD', happiness: number, connection: number, productivity: number },
  *   ...
@@ -205,36 +265,43 @@ const EntryEmotionGraph = ({ data }) => {
     );
   }
 
+  // Before plotting, group any duplicate dates and average their scores
+  const averagedData = getAveragedDataByDate(data);
+
   const formatXAxis = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }).toLowerCase();
+    return date
+      .toLocaleDateString(undefined, { month: 'short', year: '2-digit' })
+      .toLowerCase();
   };
 
   const formatYAxis = (value) => value.toFixed(1);
 
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-neutral-300 font-mono">Emotions</h3>
-        <div className="flex flex-wrap gap-6">
+      <div className="flex flex-col items-center mb-6">
+        <div className="flex gap-6 items-center">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#4ade80' }} />
-            <span style={{ color: '#4ade80' }} className="text-sm">Happiness</span>
+            <span style={{ color: '#4ade80' }} className="text-sm">
+              Happiness
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#60a5fa' }} />
-            <span style={{ color: '#60a5fa' }} className="text-sm">Connection</span>
+            <span style={{ color: '#60a5fa' }} className="text-sm">
+              Connection
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5" style={{ backgroundColor: '#fbbf24' }} />
-            <span style={{ color: '#fbbf24' }} className="text-sm">Productivity</span>
+            <span style={{ color: '#fbbf24' }} className="text-sm">
+              Productivity
+            </span>
           </div>
         </div>
       </div>
-      <div className="h-96">
+      <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={averagedData}
             margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
@@ -288,19 +355,45 @@ import {
   Scatter,
   XAxis,
   YAxis,
-  ResponsiveContainer,
-  ZAxis,
   CartesianGrid,
+  ResponsiveContainer,
 } from 'recharts';
 
-/**
- * EntryHistoryChart Component
- * @param {Array} data - Array of objects representing the chart data. Each object should have the following structure:
- * [
- *   { date: 'YYYY-MM-DD', timeValue: number },
- *   ...
- * ]
- */
+function getStartOfMonthUTC(timestamp, monthOffset = 0) {
+  // Convert the original timestamp to a “year, month” in UTC,
+  // then reconstruct a date that is always the 1st at 00:00 UTC.
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  return Date.UTC(year, month + monthOffset, 1, 0, 0, 0, 0); 
+}
+
+function generateMonthTicksUTC(start, end) {
+  const ticks = [];
+  let currentTime = start;
+
+  while (currentTime <= end) {
+    ticks.push(currentTime);
+    // Move forward by 1 month in UTC
+    const d = new Date(currentTime);
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    currentTime = d.getTime();
+  }
+
+  return ticks;
+}
+
+function formatXAxisUTC(timestamp) {
+  // Format using UTC so we never slip into the previous/next day
+  const date = new Date(timestamp);
+  // Example: “dec 24” or “jan 25”
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: '2-digit',
+    timeZone: 'UTC'
+  }).toLowerCase();
+}
+
 const EntryHistoryChart = ({ data }) => {
   if (!data || !data.length) {
     return (
@@ -310,45 +403,72 @@ const EntryHistoryChart = ({ data }) => {
     );
   }
 
-  const formatXAxis = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }).toLowerCase();
-  };
+  // Convert each date string to a numeric timestamp
+  const chartData = data.map((item) => ({
+    ...item,
+    // If item.date is like "2025-01-01", parse in UTC so it doesn't shift
+    dateValue: Date.UTC(
+      parseInt(item.date.slice(0,4)),    // year
+      parseInt(item.date.slice(5,7)) - 1, // month is 0-based
+      parseInt(item.date.slice(8,10))    // day
+    )
+  }));
 
-  const formatYAxis = (timeValue) => {
-    if (timeValue === 4) return '4 am';
-    if (timeValue === 12) return '12 pm';
-    if (timeValue === 20) return '8 pm';
+  // Determine min and max date values
+  const dateValues = chartData.map((d) => d.dateValue);
+  const minDate = Math.min(...dateValues);
+  const maxDate = Math.max(...dateValues);
+
+  // Shift domain to the first of the *previous* month and *next* month
+  const adjustedMinDate = getStartOfMonthUTC(minDate, -1); 
+  const adjustedMaxDate = getStartOfMonthUTC(maxDate, 1);
+
+  // Generate ticks at the start of each month in UTC
+  const monthTicks = generateMonthTicksUTC(adjustedMinDate, adjustedMaxDate);
+
+  // Y-axis ticks example
+  const yTicks = [4, 12, 20];
+  const formatYAxis = (value) => {
+    if (value === 4) return '4 am';
+    if (value === 12) return '12 pm';
+    if (value === 20) return '8 pm';
     return '';
   };
 
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
-      <div className="flex items-center mb-6">
-        <h3 className="text-neutral-300 font-mono">Entry Timing</h3>
+      <div className="flex justify-center items-center mb-6">
+        <h3 className="text-white font-mono text-sm">History</h3>
       </div>
-      <div className="h-96">
+
+      <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart
-            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-          >
+          <ScatterChart margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
             <XAxis
-              dataKey="date"
+              dataKey="dateValue"
+              type="number"
+              scale="time"
+              domain={[adjustedMinDate, adjustedMaxDate]}
+              ticks={monthTicks}
+              tickFormatter={formatXAxisUTC}
               stroke="#737373"
-              tickFormatter={formatXAxis}
             />
             <YAxis
               dataKey="timeValue"
-              stroke="#737373"
-              tickFormatter={formatYAxis}
+              type="number"
               domain={[0, 24]}
-              ticks={[4, 12, 20]}
+              ticks={yTicks}
+              tickFormatter={formatYAxis}
+              stroke="#737373"
             />
-            <ZAxis range={[50, 50]} />
             <Scatter
-              data={data}
+              data={chartData}
+              x="dateValue"
+              y="timeValue"
               fill="#d4d4d4"
+              shape="circle"
+              r={5}
             />
           </ScatterChart>
         </ResponsiveContainer>
@@ -475,19 +595,20 @@ const NewEntry = () => {
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono relative">
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
-        <button
-          onClick={() => entry.trim() && setShowDeleteDialog(true)}
-          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
-          disabled={!entry.trim()}
-        >
-          <Trash2 className="w-5 h-5 text-neutral-400" />
-        </button>
+       
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
         >
           <Save className="w-5 h-5 text-neutral-400" />
+        </button>
+        <button
+          onClick={() => entry.trim() && setShowDeleteDialog(true)}
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
+          disabled={!entry.trim()}
+        >
+          <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
       </div>
 
@@ -671,7 +792,7 @@ const Login = () => {
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-md mx-auto space-y-8 pt-8">
         <h1 className="text-2xl mb-10">tiny journal</h1>
-        <h1 className="text-2xl mb-12">The lightweight journal with ai.</h1>
+        <h1 className="text-2xl mb-12">Welcome back.</h1>
 
         {/* Google Login/Signup */}
         <button
@@ -721,8 +842,12 @@ import {
   Sparkles,
   Rocket,
   Smile,
-  Plus, 
+  Plus,
 } from 'lucide-react';
+
+// NEW IMPORTS for your graphs:
+import EntryEmotionGraph from '../components/graphs/EntryEmotionGraph';
+import EntryHistoryChart from '../components/graphs/EntryHistoryChart';
 
 // "Bouncing dots" used for both waiting and typing:
 const TypingAnimation = () => (
@@ -758,6 +883,7 @@ const parseTextFormatting = (text) => {
   let formattedText = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   // Then handle italic (*text*)
   formattedText = formattedText.replace(/\*(.+?)\*/g, '<i>$1</i>');
+  // Replace leftover '*' with '-'
   formattedText = formattedText.replace(/\*/g, '-');
   return formattedText;
 };
@@ -789,43 +915,46 @@ const Analyze = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
+  /**
+   * Type out the final text character by character
+   */
   const typeMessage = async (fullText, delay = 30) => {
-    const parsedText = parseTextFormatting(fullText); // parse text formatting
+    const parsedText = parseTextFormatting(fullText);
     setIsTyping(true);
-    setTypingMessage(''); // Reset current typing message
+    setTypingMessage('');
     isFirstCharacter.current = true;
-  
-    let displayedMessage = ''; // Raw text being typed
-    let formattedMessage = ''; // Parsed HTML being rendered
+
+    let displayedMessage = '';
+    let formattedMessage = '';
     const chunkSize = 3;
-  
+
     for (let i = 0; i < fullText.length; i += chunkSize) {
-      displayedMessage = fullText.slice(0, i + chunkSize); // Progressively slice raw text
-      formattedMessage = parseTextFormatting(displayedMessage); // Apply parsing to the current slice
-      setTypingMessage(formattedMessage); // Update state with formatted HTML
-  
+      displayedMessage = fullText.slice(0, i + chunkSize);
+      formattedMessage = parseTextFormatting(displayedMessage);
+      setTypingMessage(formattedMessage);
+
       if (isFirstCharacter.current) {
         setTimeout(scrollToBottom, 50);
         isFirstCharacter.current = false;
       }
-  
+
       await new Promise((resolve) =>
         requestAnimationFrame(() => {
           setTimeout(resolve, delay);
         })
       );
     }
-  
+
     setIsTyping(false);
     setTypingMessage('');
-  
-    // Append the final formatted message to the messages array
-    setMessages((prev) => [
-      ...prev,
-      { type: 'bot', content: parsedText },
-    ]);
+
+    // Return the final parsed HTML so we can insert it into messages
+    return parsedText;
   };
 
+  /**
+   * Sends the user message to /api/analyze, gets AI response, and updates state
+   */
   const handleSend = async (messageText = input) => {
     if (!messageText.trim()) return;
 
@@ -859,10 +988,25 @@ const Analyze = () => {
       }
 
       const data = await res.json();
+      setIsFetching(false);
+
+      // Animate the returned AI text
       if (data.aiResponse) {
-        setIsFetching(false);
-        await typeMessage(data.aiResponse);
+        const finalHTML = await typeMessage(data.aiResponse);
+
+        // Once typing is done, push it to messages
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: 'bot',
+            content: finalHTML,
+            // If the server returned chart data, attach it directly to the same bot message
+            emotionData: data.emotionData || null,
+            entryHistoryData: data.entryHistoryData || null,
+          },
+        ]);
       }
+
     } catch (error) {
       console.error('Error calling /api/analyze:', error);
     } finally {
@@ -870,6 +1014,9 @@ const Analyze = () => {
     }
   };
 
+  /**
+   * Handles Enter key submission
+   */
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -890,7 +1037,7 @@ const Analyze = () => {
 
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
-      {/* Container for both buttons */}
+      {/* Container for back + new-convo buttons */}
       <div className="absolute top-4 left-4 flex space-x-2 z-10">
         {/* Back Button */}
         <button
@@ -900,7 +1047,7 @@ const Analyze = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* New Conversation Button (Plus Icon) */}
+        {/* New Conversation Button */}
         <button
           className="hover:bg-neutral-800 p-2 rounded transition-colors bg-neutral-900"
           onClick={handleNewConversation}
@@ -910,8 +1057,11 @@ const Analyze = () => {
       </div>
 
       {/* Scrollable Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ overscrollBehavior: 'contain' }}>
-        {/* If no messages, show suggestions */}
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        style={{ overscrollBehavior: 'contain' }}
+      >
+        {/* If no messages yet, show suggestions */}
         {messages.length === 0 ? (
           <div className="h-full flex flex-col justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
@@ -927,56 +1077,90 @@ const Analyze = () => {
           </div>
         ) : (
           <>
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex w-full ${
-                  message.type === 'user' ? 'justify-end items-start' : 'justify-start items-start space-x-2'
-                }`}
-              >
-                {message.type === 'bot' && (
-                  <div className="mt-2">
-                    <BookText className="w-5 h-5 text-neutral-500" />
+            {messages.map((message, index) => {
+              if (message.type === 'user') {
+                // user message bubble
+                return (
+                  <div
+                    key={index}
+                    className="flex w-full justify-end items-start"
+                  >
+                    <div
+                      className="max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden
+                                 bg-neutral-800/50"
+                    >
+                      <div
+                        className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+                        dangerouslySetInnerHTML={{ __html: message.content }}
+                      ></div>
+                    </div>
                   </div>
-                )}
-                <div
-                  className={`max-w-[80%] min-w-0 px-4 py-2 rounded break-words overflow-hidden ${
-                    message.type === 'user'
-                      ? 'bg-neutral-800/50'
-                      : 'bg-neutral-800/30 border border-neutral-700'
-                  }`}
-                >
-                   <div
-    className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
-    dangerouslySetInnerHTML={{ __html: message.content }}
-  ></div>
-                </div>
-              </div>
-            ))}
+                );
+              } else if (message.type === 'bot') {
+                // AI message bubble
+                return (
+                  <div
+                    key={index}
+                    className="flex w-full justify-start items-start space-x-2"
+                  >
+                    <div className="mt-2">
+                      <BookText className="w-5 h-5 text-neutral-500" />
+                    </div>
+                    <div className="max-w-[80%] min-w-0">
+                      {/* AI message bubble */}
+                      <div
+                        className="px-4 py-2 rounded break-words overflow-hidden
+                                   bg-neutral-800/30 border border-neutral-700"
+                      >
+                        <div
+                          className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
+                          dangerouslySetInnerHTML={{ __html: message.content }}
+                        />
+                      </div>
+                      {/* Charts below the message bubble */}
+                      <div className="mt-2 flex flex-wrap gap-4">
+                        {message.emotionData && (
+                          <div className="flex-1 min-w-[300px]">
+                            <EntryEmotionGraph data={message.emotionData} />
+                          </div>
+                        )}
+                        {message.entryHistoryData && (
+                          <div className="flex-1 min-w-[300px]">
+                            <EntryHistoryChart data={message.entryHistoryData} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              } else {
+                // fallback for unknown message types
+                return null;
+              }
+            })}
           </>
         )}
 
-        {/* Display "bouncing dots" if we are waiting for the server,
-            or if we are currently typing out the final AI response. */}
+        {/* Display bouncing dots if waiting for server or actively typing */}
         {(isFetching || isTyping) && (
           <div className="flex w-full justify-start items-start space-x-2">
             <div className="mt-2">
               <BookText className="w-5 h-5 text-neutral-500" />
             </div>
             <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-            {isTyping && typingMessage ? (
-  <div
-    className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
-    dangerouslySetInnerHTML={{ __html: typingMessage }}
-  ></div>
-) : (
-  <TypingAnimation />
-)}
+              {isTyping && typingMessage ? (
+                <div
+                  className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+                  dangerouslySetInnerHTML={{ __html: typingMessage }}
+                ></div>
+              ) : (
+                <TypingAnimation />
+              )}
             </div>
           </div>
         )}
 
-        {/* Dummy ref to scroll into view */}
+        {/* Dummy ref for scrolling */}
         <div ref={messagesEndRef} />
       </div>
 
@@ -1090,7 +1274,7 @@ const Home = () => {
         <div className="space-y-4">
           <MenuItem label="new entry" path="/new-entry" />
           <MenuItem label="analyze" path="/analyze" />
-          <MenuItem label="account" path="/account" />
+          <MenuItem label="settings" path="/account" />
         </div>
 
         {/* Feed Items */}
@@ -1167,16 +1351,14 @@ const Account = ({ userEmail }) => {
             name: "free",
             price: "$0/month",
             features: [
-                "Basic AI analysis",
                 "Limited analysis requests",
             ],
             current: subscription.tier === "free",
         },
         {
             name: "plus",
-            price: "$5/month",
+            price: "$3/month",
             features: [
-                "Advanced AI analysis",
                 "Increased analysis requests",
             ],
             current: subscription.tier === "plus",
@@ -1260,7 +1442,7 @@ const Account = ({ userEmail }) => {
                         className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
                         onClick={() => router.push("/")}
                     />
-                    <span>Account</span>
+                    <span>Settings</span>
                 </h1>
 
                 <div className="space-y-6">
@@ -1431,42 +1613,26 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Helper Functions
 // ==============================
 
-/**
- * Generates a summary using the provided generative AI model and prompt.
- * @param {object} model - The generative AI model instance.
- * @param {string} prompt - The prompt to generate a response for.
- * @returns {Promise<string>} - The generated response as text.
- */
-async function generateSummary(model, prompt) {
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = await response.text();
-  return text.trim();
-}
 
 /**
- * Prepares an emotion analysis prompt for the given journal entry text.
- * @param {string} text - The journal entry to analyze.
- * @returns {string} - The emotion analysis prompt.
+ * Extracts the JSON object from a response string.
+ * 
+ * @param {string} response - The string containing the JSON object.
+ * @returns {object|null} - The extracted JSON object, or null if parsing fails.
  */
-function prepareEmotionAnalysisPrompt(text) {
-  return `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
-    The emotions are happiness, connection, and productivity, and they should be gauged in a scale of intensity from 0-1 with floating point numbers.
-
-    Happiness: A state of well-being and contentment, often characterized by feelings of joy, satisfaction, and fulfillment.
-    Connection: The sense of being emotionally or socially linked to others, fostering meaningful relationships and shared understanding.
-    Productivity: The ability to efficiently achieve desired outcomes or complete tasks, often measured by the quality and quantity of output in a given time.
-
-    Example json dict:
-    {
-    "happiness": .75,
-    "connection": .96,
-    "productivity": .83,
+function extractJSON(response) {
+  try {
+    // Use a regex to match the JSON object in the string
+    const jsonMatch = response.match(/{[^}]*}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
     }
-
-    Journal entry: ${text}`;
+    return null; // Return null if no JSON is found
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
+    return null;
+  }
 }
-
 
 // ==============================
 // Main Handler
@@ -1526,8 +1692,9 @@ export default async function handler(req, res) {
     Journal entry: ${text}
     `;
 
-    const emotionValuesDict = await generateSummary(emotionValuesPrompt);
-    console.log(emotionValuesDict);
+    const emotionValuesResponse = await generateSummary(emotionValuesPrompt);
+    const emotionValuesJSON = extractJSON(emotionValuesResponse);
+    console.log(emotionValuesJSON);
 
     // Generate long summary
     const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
@@ -1537,8 +1704,8 @@ export default async function handler(req, res) {
     const dateTime = new Date();
 
     await pool.query(
-      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, token.email, dateTime, shortSummary, longSummary, text]
+      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, token.email, dateTime, shortSummary, longSummary, text, JSON.stringify(emotionValuesJSON)]
     );
 
     res.status(201).json({ message: 'Entry created successfully', id, shortSummary, longSummary });
@@ -1695,19 +1862,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1) Validate the user session:
+    // Validate user session
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.email) {
+    if (!token?.email) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // 2) Parse request body to get conversation messages + new user message
+    // Parse request body
     const { messages, userMessage } = req.body;
-    if (!messages || !Array.isArray(messages) || !userMessage) {
+    if (!Array.isArray(messages) || !userMessage) {
       return res.status(400).json({ error: "Invalid request body" });
     }
 
-    // 3) Fetch the user’s entries (date + longSummary) from the DB
+    // Fetch user's journal entries
     const [entries] = await pool.query(
       `SELECT 
          DATE_FORMAT(dateTime, "%m/%d/%y") as formattedDate,
@@ -1718,29 +1885,27 @@ export default async function handler(req, res) {
       [token.email]
     );
 
-    // If no entries yet, respond with no entry message
     if (entries.length === 0) {
-      return res.status(200).json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
+      return res
+        .status(200)
+        .json({ aiResponse: "To talk about your journal, you need to make at least one entry." });
     }
 
-    // 4) Construct the prompt
-    //    a) Summaries with date
-    //    b) The conversation so far
-    //    c) The user’s current message
-    let summariesSection = "These are summaries of the users journal entries:\n";
-    entries.forEach((entry, i) => {
-      summariesSection += `Entry date: ${entry.formattedDate}]\n Summary: ${entry.longSummary}\n\n`;
-    });
+    // Construct prompt
+    const summariesSection = [
+      "These are summaries of the user's journal entries:",
+      ...entries.map(
+        (entry) =>
+          `Entry date: ${entry.formattedDate}]\n Summary: ${entry.longSummary}\n`
+      ),
+    ].join("\n");
 
-    let conversationSection = "Previous messages in this conversation:\n";
-    messages.forEach((msg) => {
-      if (msg.type === "user") {
-        conversationSection += `User: ${msg.content}\n`;
-      } else {
-        // Bot or AI messages
-        conversationSection += `AI: ${msg.content}\n`;
-      }
-    });
+    const conversationSection = [
+      "Previous messages in this conversation:",
+      ...messages.map((msg) =>
+        msg.type === "user" ? `User: ${msg.content}` : `AI: ${msg.content}`
+      ),
+    ].join("\n");
 
     const finalPrompt = `
 You are analyzing a user's journaling data. Make sure to keep a helpful and caring attitude. You are an AI but you care about the person you're talking to.
@@ -1752,24 +1917,64 @@ ${conversationSection}
 Now the user is asking:
 "${userMessage}"
 
-Please provide a thoughtful, relevant, and concise response based on the user's journal summaries past messages, and current message. Make sure to be thoughful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
+Please provide a thoughtful, relevant, and concise response based on the user's journal summaries, past messages, and current message. Make sure to be thoughtful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
 If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. They are not alone.
     `.trim();
 
-    // 5) Call the Google Generative AI "gemini-1.5-flash" model
+    // Call the Google Generative AI "gemini-1.5-flash" model
     const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
     const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(finalPrompt);
-    const response = await result.response;
-    const aiText = (await response.text()).trim();
-    console.log(aiText);
-    return res.status(200).json({ aiResponse: aiText });
+    const aiText = (await result.response.text()).trim();
+
+    // If userMessage is "Analyze trends in my journal", also fetch data for charts
+    let emotionData = null;
+    let entryHistoryData = null;
+    if (userMessage.trim().toLowerCase() === "analyze trends in my journal") {
+      const [chartEntries] = await pool.query(
+        `SELECT dateTime, emotions
+         FROM entries
+         WHERE email = ?
+         ORDER BY dateTime ASC`,
+        [token.email]
+      );
+
+      console.log(chartEntries);
+
+      emotionData = chartEntries.map((row) => {
+        const parsedEmotions =
+          typeof row.emotions === "object"
+            ? row.emotions
+            : JSON.parse(row.emotions || "{}");
+        const dateObj = new Date(row.dateTime);
+
+        return {
+          date: dateObj.toISOString().split("T")[0],
+          happiness: parsedEmotions.happiness ?? 0,
+          connection: parsedEmotions.connection ?? 0,
+          productivity: parsedEmotions.productivity ?? 0,
+        };
+      });
+
+      entryHistoryData = chartEntries.map((row) => {
+        const dateObj = new Date(row.dateTime);
+        return {
+          date: dateObj.toISOString().split("T")[0],
+          timeValue: dateObj.getHours(),
+        };
+      });
+    }
+
+    return res.status(200).json({
+      aiResponse: aiText,
+      emotionData,
+      entryHistoryData,
+    });
   } catch (error) {
     console.error("Error in analyze handler:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
-
 
 --------------------------------------------------------------------------------
 pages/api/switch-tier.js:
