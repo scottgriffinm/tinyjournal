@@ -66,6 +66,9 @@ const Analyze = () => {
   // State to show the typewriter effect once we have the server's response
   const [isTyping, setIsTyping] = useState(false);
 
+  // Ref to manage aborting typing mid-way
+  const typingAbortRef = useRef(false);
+
   const messagesEndRef = useRef(null);
   const isFirstCharacter = useRef(true);
 
@@ -82,9 +85,13 @@ const Analyze = () => {
   };
 
   /**
-   * Type out the final text character by character
+   * Type out the final text character by character, but
+   * ABORT if typingAbortRef.current = true.
    */
   const typeMessage = async (fullText, delay = 30) => {
+    // Reset the abort flag at the start
+    typingAbortRef.current = false;
+
     const parsedText = parseTextFormatting(fullText);
     setIsTyping(true);
     setTypingMessage('');
@@ -95,6 +102,12 @@ const Analyze = () => {
     const chunkSize = 3;
 
     for (let i = 0; i < fullText.length; i += chunkSize) {
+      // Check if we should abort
+      if (typingAbortRef.current) {
+        // Stop typing immediately
+        break;
+      }
+
       displayedMessage = fullText.slice(0, i + chunkSize);
       formattedMessage = parseTextFormatting(displayedMessage);
       setTypingMessage(formattedMessage);
@@ -111,11 +124,19 @@ const Analyze = () => {
       );
     }
 
+    // Once we're done (either typed everything OR got aborted),
+    // finalize the partial text if we aborted, or full text if not
+    const finalDisplayedText = typingAbortRef.current
+      ? displayedMessage
+      : fullText;
+
+    const finalParsedHTML = parseTextFormatting(finalDisplayedText);
+
     setIsTyping(false);
     setTypingMessage('');
 
     // Return the final parsed HTML so we can insert it into messages
-    return parsedText;
+    return finalParsedHTML;
   };
 
   /**
@@ -124,7 +145,32 @@ const Analyze = () => {
   const handleSend = async (messageText = input) => {
     if (!messageText.trim()) return;
 
-    // Step 1: Display user's message in the chat
+    // If the bot is currently typing, abort the old typing
+    // and finalize whatever partial text we had so far in messages
+    if (isTyping) {
+      typingAbortRef.current = true;
+
+      // Finalize partial typed text
+      const partial = typingMessage; // whatever was typed so far
+      const finalParsedPartial = parseTextFormatting(partial);
+
+      // Clear out the typing state
+      setIsTyping(false);
+      setTypingMessage('');
+
+      // Append the partial typed message to the conversation
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'bot',
+          content: finalParsedPartial,
+          emotionData: null,
+          entryHistoryData: null,
+        },
+      ]);
+    }
+
+    // Now we add the new user message below the final partial
     const userMessage = messageText.trim();
     setInput('');
     const textarea = document.querySelector('textarea');
@@ -134,10 +180,10 @@ const Analyze = () => {
     setMessages((prev) => [...prev, { type: 'user', content: userMessage }]);
     setTimeout(scrollToBottom, 50);
 
-    // Step 2: Show "bouncing dots" while awaiting the server
+    // Show "bouncing dots" while awaiting the server
     setIsFetching(true);
 
-    // Step 3: Call /api/analyze to get AI response
+    // Call /api/analyze for this new user message
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -159,20 +205,20 @@ const Analyze = () => {
       // Animate the returned AI text
       if (data.aiResponse) {
         const finalHTML = await typeMessage(data.aiResponse);
-
-        // Once typing is done, push it to messages
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: 'bot',
-            content: finalHTML,
-            // If the server returned chart data, attach it directly to the same bot message
-            emotionData: data.emotionData || null,
-            entryHistoryData: data.entryHistoryData || null,
-          },
-        ]);
+        // Only append if we weren't aborted mid-typing again
+        if (!typingAbortRef.current) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              type: 'bot',
+              content: finalHTML,
+              // If the server returned chart data, attach it directly
+              emotionData: data.emotionData || null,
+              entryHistoryData: data.entryHistoryData || null,
+            },
+          ]);
+        }
       }
-
     } catch (error) {
       console.error('Error calling /api/analyze:', error);
     } finally {
@@ -199,6 +245,7 @@ const Analyze = () => {
     setTypingMessage('');
     setIsFetching(false);
     setIsTyping(false);
+    typingAbortRef.current = false; // reset abort flag
   };
 
   return (
@@ -344,7 +391,10 @@ const Analyze = () => {
             onInput={(e) => {
               const textarea = e.target;
               textarea.style.height = '44px';
-              textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
+              textarea.style.height = `${Math.max(
+                textarea.scrollHeight,
+                44
+              )}px`;
             }}
           />
           <button
