@@ -74,7 +74,6 @@ If you see any seriously concerning behavior, make sure to remind the user in an
     const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(finalPrompt);
     const aiText = (await result.response.text()).trim();
-    console.log(aiText);
 
     // If userMessage is "Analyze trends in my journal", also fetch data for charts
     let emotionData = null;
@@ -87,6 +86,8 @@ If you see any seriously concerning behavior, make sure to remind the user in an
          ORDER BY dateTime ASC`,
         [token.email]
       );
+
+      console.log(chartEntries);
 
       emotionData = chartEntries.map((row) => {
         const parsedEmotions =
