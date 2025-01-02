@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { getCache, setCache } from "../lib/localStorageCache";
+const CACHE_KEY = "journalEntries";
+const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Home = () => {
   const router = useRouter();
@@ -10,10 +13,21 @@ const Home = () => {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
+        // Try loading cached entries first
+        const cached = getCache(CACHE_KEY);
+        console.log(`cached: ${cached}`);
+        if (cached) {
+          console.log(cached);
+          setEntries(cached);
+          return; // We have valid, unexpired data—stop here!
+        }
         const res = await fetch("/api/get-entries");
         const data = await res.json();
+        console.log(data.entries);
         if (res.ok) {
           setEntries(data.entries);
+          // Store data in localStorage with a TTL (in minutes)
+          setCache(CACHE_KEY, data.entries, CACHE_TTL * 60 * 1000); // 5 minutes
         } else {
           console.error("Error fetching entries:", data.error);
         }

@@ -14,7 +14,7 @@ import {
 } from "../components/ui/alert-dialog";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "subscriptionStatus";
-const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
+const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
@@ -73,7 +73,7 @@ const Account = ({ userEmail }) => {
                 tier: data.tier || "free",
                 expiryDate: data.expiryDate || null,
                 isRenewing: data.isRenewing || false
-              }, CACHE_SUBSCRIPTION_TTL * 60 * 1000); // 5 minutes
+              }, CACHE_TTL * 60 * 1000); // 5 minutes
             } else {
               console.error("Failed to fetch subscription status:", data.error);
             }
