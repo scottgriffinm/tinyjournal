@@ -88,7 +88,7 @@ const Analyze = () => {
    * Type out the final text character by character, but
    * ABORT if typingAbortRef.current = true.
    */
-  const typeMessage = async (fullText, delay = 30) => {
+  const typeMessage = async (fullText, delay = 20) => {
     // Reset the abort flag at the start
     typingAbortRef.current = false;
 
@@ -368,10 +368,15 @@ const Analyze = () => {
             <div className="mt-2">
               <BookText className="w-5 h-5 text-neutral-500" />
             </div>
-            <div className="bg-neutral-800/50 border border-neutral-700 rounded">
-              {isTyping && typingMessage ? (
+            <div
+              className={`${typingMessage
+                  ? 'max-w-[80%] min-w-0 bg-neutral-800/30 border border-neutral-700 rounded px-4 py-2'
+                  : 'bg-neutral-800/50 border border-neutral-700 rounded'
+                }`}
+            >
+              {typingMessage ? (
                 <div
-                  className="whitespace-pre-wrap font-mono text-sm px-4 py-2"
+                  className="whitespace-pre-wrap font-mono text-sm break-words overflow-hidden"
                   dangerouslySetInnerHTML={{ __html: typingMessage }}
                 ></div>
               ) : (

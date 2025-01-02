@@ -10,7 +10,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Helper Functions
 // ==============================
 
-
 /**
  * Extracts the JSON object from a response string.
  * 

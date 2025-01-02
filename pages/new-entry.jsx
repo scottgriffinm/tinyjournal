@@ -20,7 +20,6 @@ const NewEntry = () => {
   const [showAnalyzeDialog, setShowAnalyzeDialog] = useState(false); // New state for second dialog
   const [isSaving, setIsSaving] = useState(false); // New state for loader
 
-
   const handleDelete = () => {
     setEntry('');
     setShowDeleteDialog(false);
