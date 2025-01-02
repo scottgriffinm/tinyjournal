@@ -480,6 +480,53 @@ const EntryHistoryChart = ({ data }) => {
 export default EntryHistoryChart;
 
 --------------------------------------------------------------------------------
+lib/localStorageCache.js:
+
+// lib/localStorageCache.js
+
+/**
+ * Retrieve data from localStorage by key.
+ * If it's expired or doesn't exist, return null.
+ */
+export function getCache(key) {
+    if (typeof window === 'undefined') return null;
+
+    const cachedString = localStorage.getItem(key);
+    if (!cachedString) {
+        console.log("No cache found for key:", key);
+        return null;
+    }
+
+    try {
+        const cachedData = JSON.parse(cachedString);
+        const { data, expiry } = cachedData;
+        if (!expiry || Date.now() > expiry) {
+            console.log("Cache expired for key:", key);
+            localStorage.removeItem(key);
+            return null;
+        }
+
+        console.log("Cache hit for key:", key, cachedData);
+        return data;
+    } catch (error) {
+        console.error("Error parsing JSON from localStorage", error);
+        return null;
+    }
+}
+  
+  /**
+   * Store data in localStorage with an optional TTL (time-to-live).
+   * `ttlMs` is the number of milliseconds from now until it expires.
+   */
+  export function setCache(key, data, ttlMs = 5 * 60 * 1000) {
+    if (typeof window === 'undefined') return;
+    const expiry = Date.now() + ttlMs;
+    const cachedObject = { data, expiry };
+    localStorage.setItem(key, JSON.stringify(cachedObject));
+    console.log("Cache set:", key, cachedObject);
+}
+
+--------------------------------------------------------------------------------
 lib/db.js:
 
 // lib/db.js
@@ -595,7 +642,13 @@ const NewEntry = () => {
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono relative">
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
-       
+      <button
+          onClick={() => entry.trim() && setShowDeleteDialog(true)}
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
+          disabled={!entry.trim()}
+        >
+          <Trash2 className="w-5 h-5 text-neutral-400" />
+        </button>
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
@@ -603,13 +656,7 @@ const NewEntry = () => {
         >
           <Save className="w-5 h-5 text-neutral-400" />
         </button>
-        <button
-          onClick={() => entry.trim() && setShowDeleteDialog(true)}
-          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
-          disabled={!entry.trim()}
-        >
-          <Trash2 className="w-5 h-5 text-neutral-400" />
-        </button>
+      
       </div>
 
       {/* Full-screen textarea */}
@@ -900,6 +947,9 @@ const Analyze = () => {
   // State to show the typewriter effect once we have the server's response
   const [isTyping, setIsTyping] = useState(false);
 
+  // Ref to manage aborting typing mid-way
+  const typingAbortRef = useRef(false);
+
   const messagesEndRef = useRef(null);
   const isFirstCharacter = useRef(true);
 
@@ -916,9 +966,13 @@ const Analyze = () => {
   };
 
   /**
-   * Type out the final text character by character
+   * Type out the final text character by character, but
+   * ABORT if typingAbortRef.current = true.
    */
   const typeMessage = async (fullText, delay = 30) => {
+    // Reset the abort flag at the start
+    typingAbortRef.current = false;
+
     const parsedText = parseTextFormatting(fullText);
     setIsTyping(true);
     setTypingMessage('');
@@ -929,6 +983,12 @@ const Analyze = () => {
     const chunkSize = 3;
 
     for (let i = 0; i < fullText.length; i += chunkSize) {
+      // Check if we should abort
+      if (typingAbortRef.current) {
+        // Stop typing immediately
+        break;
+      }
+
       displayedMessage = fullText.slice(0, i + chunkSize);
       formattedMessage = parseTextFormatting(displayedMessage);
       setTypingMessage(formattedMessage);
@@ -945,11 +1005,19 @@ const Analyze = () => {
       );
     }
 
+    // Once we're done (either typed everything OR got aborted),
+    // finalize the partial text if we aborted, or full text if not
+    const finalDisplayedText = typingAbortRef.current
+      ? displayedMessage
+      : fullText;
+
+    const finalParsedHTML = parseTextFormatting(finalDisplayedText);
+
     setIsTyping(false);
     setTypingMessage('');
 
     // Return the final parsed HTML so we can insert it into messages
-    return parsedText;
+    return finalParsedHTML;
   };
 
   /**
@@ -958,7 +1026,32 @@ const Analyze = () => {
   const handleSend = async (messageText = input) => {
     if (!messageText.trim()) return;
 
-    // Step 1: Display user's message in the chat
+    // If the bot is currently typing, abort the old typing
+    // and finalize whatever partial text we had so far in messages
+    if (isTyping) {
+      typingAbortRef.current = true;
+
+      // Finalize partial typed text
+      const partial = typingMessage; // whatever was typed so far
+      const finalParsedPartial = parseTextFormatting(partial);
+
+      // Clear out the typing state
+      setIsTyping(false);
+      setTypingMessage('');
+
+      // Append the partial typed message to the conversation
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'bot',
+          content: finalParsedPartial,
+          emotionData: null,
+          entryHistoryData: null,
+        },
+      ]);
+    }
+
+    // Now we add the new user message below the final partial
     const userMessage = messageText.trim();
     setInput('');
     const textarea = document.querySelector('textarea');
@@ -968,10 +1061,10 @@ const Analyze = () => {
     setMessages((prev) => [...prev, { type: 'user', content: userMessage }]);
     setTimeout(scrollToBottom, 50);
 
-    // Step 2: Show "bouncing dots" while awaiting the server
+    // Show "bouncing dots" while awaiting the server
     setIsFetching(true);
 
-    // Step 3: Call /api/analyze to get AI response
+    // Call /api/analyze for this new user message
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -993,20 +1086,20 @@ const Analyze = () => {
       // Animate the returned AI text
       if (data.aiResponse) {
         const finalHTML = await typeMessage(data.aiResponse);
-
-        // Once typing is done, push it to messages
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: 'bot',
-            content: finalHTML,
-            // If the server returned chart data, attach it directly to the same bot message
-            emotionData: data.emotionData || null,
-            entryHistoryData: data.entryHistoryData || null,
-          },
-        ]);
+        // Only append if we weren't aborted mid-typing again
+        if (!typingAbortRef.current) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              type: 'bot',
+              content: finalHTML,
+              // If the server returned chart data, attach it directly
+              emotionData: data.emotionData || null,
+              entryHistoryData: data.entryHistoryData || null,
+            },
+          ]);
+        }
       }
-
     } catch (error) {
       console.error('Error calling /api/analyze:', error);
     } finally {
@@ -1033,6 +1126,7 @@ const Analyze = () => {
     setTypingMessage('');
     setIsFetching(false);
     setIsTyping(false);
+    typingAbortRef.current = false; // reset abort flag
   };
 
   return (
@@ -1178,7 +1272,10 @@ const Analyze = () => {
             onInput={(e) => {
               const textarea = e.target;
               textarea.style.height = '44px';
-              textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
+              textarea.style.height = `${Math.max(
+                textarea.scrollHeight,
+                44
+              )}px`;
             }}
           />
           <button
@@ -1334,6 +1431,9 @@ import {
     AlertDialogCancel,
     AlertDialogAction
 } from "../components/ui/alert-dialog";
+import { getCache, setCache } from "../lib/localStorageCache";
+const CACHE_KEY = "subscriptionStatus";
+const CACHE_SUBSCRIPTION_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Account = ({ userEmail }) => {
     const router = useRouter();
@@ -1366,28 +1466,45 @@ const Account = ({ userEmail }) => {
     ];
 
     useEffect(() => {
-        const fetchSubscriptionStatus = async () => {
-            try {
-                const response = await fetch("/api/get-subscription-status");
-                const data = await response.json();
-                if (response.ok) {
-                    setSubscription({
-                        tier: data.tier || "free",
-                        expiryDate: data.expiryDate || null,
-                        isRenewing: data.isRenewing || false,
-                    });
-                } else {
-                    console.error("Failed to fetch subscription status:", data.error);
-                }
-            } catch (error) {
-                console.error("Error fetching subscription status:", error);
-            } finally {
-                setLoading(false);
+        async function fetchSubscription() {
+          try {
+            // Try loading cached subscription first
+            const cached = getCache(CACHE_KEY);
+            console.log(`cached: ${cached}`);
+            if (cached) {
+              setSubscription(cached);
+              setLoading(false);
+              return; // We have valid, unexpired data—stop here!
             }
-        };
-
-        fetchSubscriptionStatus();
-    }, []);
+    
+            // Otherwise, fetch from server
+            const response = await fetch("/api/get-subscription-status");
+            const data = await response.json();
+    
+            if (response.ok) {
+              setSubscription({
+                tier: data.tier || "free",
+                expiryDate: data.expiryDate || null,
+                isRenewing: data.isRenewing || false,
+              });
+              // Store data in localStorage with a TTL (in minutes)
+              setCache(CACHE_KEY, {
+                tier: data.tier || "free",
+                expiryDate: data.expiryDate || null,
+                isRenewing: data.isRenewing || false
+              }, CACHE_SUBSCRIPTION_TTL * 60 * 1000); // 5 minutes
+            } else {
+              console.error("Failed to fetch subscription status:", data.error);
+            }
+          } catch (error) {
+            console.error("Error fetching subscription status:", error);
+          } finally {
+            setLoading(false);
+          }
+        }
+    
+        fetchSubscription();
+      }, []);
 
     const handleUpgrade = async () => {
         try {
@@ -1918,7 +2035,7 @@ Now the user is asking:
 "${userMessage}"
 
 Please provide a thoughtful, relevant, and concise response based on the user's journal summaries, past messages, and current message. Make sure to be thoughtful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
-If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. They are not alone.
+If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. But only tell them once per conversation. They are not alone. Make sure to then actually try help them analyze any potential cognitive distortions and try to show them the brighter side of things.
     `.trim();
 
     // Call the Google Generative AI "gemini-1.5-flash" model

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
   ArrowUp,
@@ -247,6 +247,14 @@ const Analyze = () => {
     setIsTyping(false);
     typingAbortRef.current = false; // reset abort flag
   };
+
+  // Gather url query prompt
+  useEffect(() => {
+    const queryPrompt = router.query.prompt;
+    if (queryPrompt) {
+      setInput(decodeURIComponent(queryPrompt));
+    }
+  }, [router.query]);
 
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono flex flex-col h-screen relative">
