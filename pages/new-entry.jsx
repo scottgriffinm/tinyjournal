@@ -94,7 +94,7 @@ const NewEntry = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+        <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-neutral-300">delete entry?</AlertDialogTitle>
             <AlertDialogDescription className="text-neutral-400">
@@ -120,7 +120,7 @@ const NewEntry = () => {
 
       {/* Save Confirmation Dialog */}
       <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+        <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-neutral-300">save entry?</AlertDialogTitle>
             <AlertDialogDescription className="text-neutral-400">
@@ -146,7 +146,7 @@ const NewEntry = () => {
 
       {/* Analyze Confirmation Dialog */}
       <AlertDialog open={showAnalyzeDialog} onOpenChange={setShowAnalyzeDialog}>
-        <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+        <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-neutral-300">want to talk about your entry?</AlertDialogTitle>
             <AlertDialogDescription className="text-neutral-400">you can analyze your entry or return to the main page.</AlertDialogDescription>
