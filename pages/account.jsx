@@ -210,7 +210,7 @@ const Account = ({ userEmail }) => {
                     </div>
                 </div>
 
-                <div className="pt-8">
+                <div className="">
                     <button
                         onClick={() => setShowLogoutDialog(true)}
                         className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
@@ -222,7 +222,7 @@ const Account = ({ userEmail }) => {
             </div>
 
             <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
-                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700">
+                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-neutral-300">Cancel Subscription Renewal</AlertDialogTitle>
                         <AlertDialogDescription className="text-neutral-400">
@@ -231,7 +231,7 @@ const Account = ({ userEmail }) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel
-                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600"
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
                             onClick={() => setShowDowngradeDialog(false)}
                         >
                             Cancel
