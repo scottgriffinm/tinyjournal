@@ -30,6 +30,126 @@ function extractJSON(response) {
   }
 }
 
+/**
+ * Extracts a list of three pieces of text from a string, where each piece is separated by any number of newlines.
+ *
+ * @param {string} inputString - The input string containing three pieces of text separated by newlines.
+ * @returns {Array<string>} - An array containing the three pieces of text as individual items.
+ * @throws {Error} - Throws an error if the input string does not contain exactly three pieces of text.
+ */
+const extractList = (inputString) => {
+  // Split the input string using one or more newlines as the delimiter
+  const items = inputString.split(/\n+/).map((item) => item.trim()).filter((item) => item.length > 0);
+
+  // Validate that the input contains exactly three pieces of text
+  if (items.length !== 3) {
+    throw new Error('Input string must contain exactly three pieces of text.');
+  }
+
+  return items;
+};
+
+/**
+ * Fetches all dateTimes, longSummaries, and emotions from the entries table.
+ *
+ * @returns {Promise<Array<{ dateTime: Date, longSummary: string, emotions: any }>>} - A promise that resolves to an array of objects containing the dateTime, longSummary, and emotions.
+ * @throws {Error} - Throws an error if the database query fails.
+ */
+const getSelectedEntryData = async () => {
+  try {
+    // Query to fetch the desired fields from the entries table
+    const [rows] = await pool.query(
+      'SELECT dateTime, longSummary, emotions FROM entries ORDER BY dateTime ASC'
+    );
+
+    // Parse emotions field (JSON) for each entry
+    const result = rows.map((row) => ({
+      dateTime: row.dateTime,
+      longSummary: row.longSummary,
+      emotions: row.emotions, // Parse JSON field
+    }));
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching entries data:', error);
+    throw error; // Rethrow the error for handling upstream
+  }
+};
+
+/**
+ * Constructs a formatted string representation of the selected entry data.
+ *
+ * Each entry includes the date and time, emotions, and long summary. The most recent entry
+ * is emphasized at the beginning of its description. Additionally, the full text of the
+ * final entry is appended at the end.
+ *
+ * @param {Array<{ dateTime: string, emotions: Object, longSummary: string }>} selectedEntryData - 
+ * An array of entry objects containing `dateTime`, `emotions`, and `longSummary`.
+ * @param {string} text - The full text associated with the final (most recent) entry.
+ * @returns {string} - A formatted string representation of the entries.
+ */
+const constructAllEntriesString = (selectedEntryData, text) => {
+  let selectedEntryDataString = '';
+
+  // Loop through the entries to construct the body of the string
+  selectedEntryData.forEach((entry, index) => {
+    const { dateTime, emotions, longSummary } = entry;
+
+    // Add emphasis if this is the last entry
+    if (index === selectedEntryData.length - 1) {
+      selectedEntryDataString += `This is the most recent entry:\n`;
+    }
+
+    selectedEntryDataString += `Entry ${index + 1}:\n`;
+    selectedEntryDataString += `- Date and Time: ${new Date(dateTime).toLocaleString()}\n`;
+    selectedEntryDataString += `- Emotions: ${JSON.stringify(emotions)}\n`;
+    selectedEntryDataString += `- Summary: ${longSummary}\n\n`;
+  });
+
+  // Add the full text for the final entry
+  selectedEntryDataString += `- Full text for final entry: ${text}`;
+
+  return selectedEntryDataString;
+};
+
+
+/**
+ * Constructs a prompt for generating an observation about the user's entries.
+ *
+ * The prompt begins with a request to provide an observation about the user's entries,
+ * focusing on the most recent entry. It appends the provided formatted string of
+ * selected entry data to the prompt.
+ *
+ * @param {string} selectedEntryDataString - A formatted string representation of the user's entries.
+ * @returns {string} - The constructed observation prompt.
+ */
+const constructObservationPrompt = (selectedEntryDataString) => {
+  // Start constructing the prompt
+  let prompt = `I want you to give an observation about the user's entries that relates to the most recent entry. Your observation should be no more than one brief sentence.\n\n`;
+  prompt += selectedEntryDataString;
+  return prompt;
+};
+
+/**
+ * Constructs a prompt for generating three distinct recommendations based on the user's entries.
+ *
+ * The prompt requests three recommendations specifically related to the most recent entry, 
+ * while considering the context of all previous entries. Each recommendation is expected to 
+ * be distinct and separated by three newlines in the response.
+ *
+ * @param {string} selectedEntryDataString - A formatted string representation of the user's entries.
+ * @returns {string} - The constructed recommendations prompt.
+ */
+const constructRecommendationsPrompt = (selectedEntryDataString) => {
+  // Start constructing the prompt
+  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. \n\n`;
+  prompt += selectedEntryDataString;
+  return prompt;
+};
+
+
+
+
 // ==============================
 // Main Handler
 // ==============================
@@ -60,7 +180,7 @@ export default async function handler(req, res) {
     const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
     const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const generateSummary = async (prompt) => {
+    const promptGemini = async (prompt) => {
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = await response.text();
@@ -88,23 +208,51 @@ export default async function handler(req, res) {
     Journal entry: ${text}
     `;
 
-    const emotionValuesResponse = await generateSummary(emotionValuesPrompt);
+    const emotionValuesResponse = await promptGemini(emotionValuesPrompt);
     const emotionValuesJSON = extractJSON(emotionValuesResponse);
     console.log(emotionValuesJSON);
+    const happiness = emotionValuesJSON['happiness'];
+    const connection = emotionValuesJSON['connection'];
+    const productivity = emotionValuesJSON['productivity'];
 
     // Generate long summary
     const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
-    const longSummary = await generateSummary(longSummaryPrompt);
+    const longSummary = await promptGemini(longSummaryPrompt);
 
+    // Make id
     const id = uuidv4();
     const dateTime = new Date();
 
+    // Save to database
     await pool.query(
       'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [id, token.email, dateTime, shortSummary, longSummary, text, JSON.stringify(emotionValuesJSON)]
     );
 
-    res.status(201).json({ message: 'Entry created successfully', id, shortSummary, longSummary });
+    // Get observation & recommendations
+    // Get relevant entry data (dateTime, longSummary, emotions)
+    let selectedEntryData = null;
+    try {
+      selectedEntryData = await getSelectedEntryData();
+    } catch (error) {
+      console.log('Failed to get selected entry data:', error);
+    }
+    // Make combined string of all entries
+    const allEntriesString = constructAllEntriesString(selectedEntryData, text);
+    
+    // Get observation
+    const observationPrompt = constructObservationPrompt(allEntriesString);
+    const observation = await promptGemini(observationPrompt);
+
+    // Get recommendations
+    const recommendationsPrompt = constructRecommendationsPrompt(allEntriesString);
+    const recommendationsString = await promptGemini(recommendationsPrompt);
+    const recommendations = extractList(recommendationsString);
+
+    // Get total number of entries
+    const entryNumber = selectedEntryData.length;
+
+    res.status(201).json({ message: 'Entry created successfully', entryNumber, observation, longSummary, recommendations, happiness, connection, productivity});
   } catch (error) {
     console.error('Error creating entry:', error);
     res.status(500).json({ error: 'Internal Server Error' });

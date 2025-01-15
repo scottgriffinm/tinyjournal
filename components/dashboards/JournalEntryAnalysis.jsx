@@ -1,6 +1,4 @@
 import React from 'react';
-import { ArrowLeft, Sparkles } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 
 /**
  * CircularProgress Component
@@ -58,7 +56,7 @@ const CircularProgress = ({ value, color, label }) => {
  * @param {number} props.data.entryNumber - The journal entry number
  * @param {string} props.data.entryDatetime - The timestamp of the journal entry
  * @param {string} props.data.observation - Observation text related to the entry
- * @param {string} props.data.entrySummary - Summary of the journal entry
+ * @param {string} props.data.longSummary - Summary of the journal entry
  * @param {Array<string>} props.data.recommendations - List of recommendations
  * 
  * @returns {JSX.Element} A component displaying journal entry details, metrics, and recommendations
@@ -70,7 +68,7 @@ export default function JournalEntryAnalysis({ data }) {
       entryNumber,
       entryDatetime,
       observation,
-      entrySummary,
+      longSummary,
       recommendations,
     } = data;
   
@@ -84,7 +82,7 @@ export default function JournalEntryAnalysis({ data }) {
         </div>
   
         {/* Metrics Section */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center max-w-lg md:max-w-sm mx-auto md:ml-2">
           <CircularProgress
             value={metrics.happiness}
             color="stroke-green-500"
@@ -105,7 +103,7 @@ export default function JournalEntryAnalysis({ data }) {
         {/* Summary Section */}
         <div className="space-y-2">
           <h3 className="text-lg text-neutral-300">Summary</h3>
-          <p className="text-neutral-400 leading-relaxed">{entrySummary}</p>
+          <p className="text-neutral-400 leading-relaxed">{longSummary}</p>
         </div>
   
         {/* Recommendations Section */}
@@ -123,24 +121,6 @@ export default function JournalEntryAnalysis({ data }) {
           </div>
         </div>
   
-        {/* Footer Buttons */}
-        <div className="flex justify-between pt-4 border-t border-neutral-800">
-          <Button
-            className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-2 rounded-lg shadow-lg hover:shadow-blue-500/20 transition-all flex items-center space-x-2"
-            onClick={() => console.log("Navigate back")}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </Button>
-  
-          <Button
-            className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-2 rounded-lg shadow-lg hover:shadow-blue-500/20 transition-all flex items-center space-x-2"
-            onClick={() => console.log("Open discussion")}
-          >
-            <span>Discuss</span>
-            <Sparkles className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
     );
   }

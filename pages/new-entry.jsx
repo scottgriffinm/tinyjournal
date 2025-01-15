@@ -11,14 +11,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
+import JournalEntryAnalysis from '../components/dashboards/JournalEntryAnalysis';
 
 const NewEntry = () => {
   const router = useRouter();
   const [entry, setEntry] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [showAnalyzeDialog, setShowAnalyzeDialog] = useState(false); // New state for second dialog
   const [isSaving, setIsSaving] = useState(false); // New state for loader
+  const [analysisData, setAnalysisData] = useState(null);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
 
   const handleDelete = () => {
     setEntry('');
@@ -27,22 +29,40 @@ const NewEntry = () => {
   };
 
   const handleSave = async () => {
-    const shortSummary = entry.slice(0, 10);
-    const longSummary = entry.slice(0, 20);
 
     setIsSaving(true); // Start loader
     try {
       const response = await fetch('/api/create-entry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: entry, shortSummary, longSummary }),
+        body: JSON.stringify({ text: entry }),
       });
 
       if (response.ok) {
         console.log('Entry successfully saved!');
         setEntry('');
         setShowSaveDialog(false);
-        setShowAnalyzeDialog(true); // Show second dialog
+
+        const data = await response.json();
+       
+        // 3) Provide *placeholder* data for JournalEntryAnalysis:
+        setAnalysisData({
+          entryNumber: data.entryNumber,
+          entryDatetime: new Date().toLocaleString(),
+          observation: data.observation,
+          longSummary: data.longSummary,
+          recommendations: data.recommendations,
+          metrics: {
+            happiness: data.happiness,
+            connection: data.connection,
+            productivity: data.productivity,
+          },
+        });
+
+        // 4) Make the panel “swipe up” by toggling `analysisOpen`
+        setAnalysisOpen(true);
+
+
       } else {
         const errorData = await response.json();
         console.error('Error saving entry:', errorData.error);
@@ -59,10 +79,10 @@ const NewEntry = () => {
 
       {/* Saving loader */}
       {isSaving && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-    <div className="h-10 w-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-  </div>
-)}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="h-10 w-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
 
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
@@ -144,35 +164,25 @@ const NewEntry = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Analyze Confirmation Dialog */}
-      <AlertDialog open={showAnalyzeDialog} onOpenChange={setShowAnalyzeDialog}>
-        <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-neutral-300">want to talk about your entry?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-400">you can analyze your entry or return to the main page.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
-              onClick={() => {
-                setShowAnalyzeDialog(false);
-                router.push('/');
-              }}
-            >
-              No
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
-              onClick={() => {
-                setShowAnalyzeDialog(false);
-                router.push('/analyze?prompt=What%20do%20you%20think%20about%20my%20most%20recent%20entry?');
-              }}
-            >
-              Yes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+     {/* Analysis panel */}
+{analysisData && (
+  <div
+    className={`
+      fixed bottom-0 left-0 w-full h-[100vh]
+      bg-neutral-900
+      z-40
+      border-t border-neutral-700
+      overflow-hidden /* Prevent content from spilling */
+    `}
+  >
+    <div
+      className="h-full w-full overflow-y-auto scroll-smooth p-4"
+    >
+      <JournalEntryAnalysis data={analysisData} />
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
