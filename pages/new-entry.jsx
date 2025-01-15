@@ -164,7 +164,8 @@ const NewEntry = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-     {/* Analysis panel */}
+
+{/* Analysis panel */}
 {analysisData && (
   <div
     className={`
@@ -172,13 +173,37 @@ const NewEntry = () => {
       bg-neutral-900
       z-40
       border-t border-neutral-700
-      overflow-hidden /* Prevent content from spilling */
+      overflow-hidden
     `}
   >
-    <div
-      className="h-full w-full overflow-y-auto scroll-smooth p-4"
-    >
+    {/* Scrollable Content */}
+    <div className="h-full w-full overflow-y-auto scroll-smooth p-4 relative">
+      
+      {/* Close Button */}
+      <span
+        onClick={() => router.push("/")}
+        className="absolute top-8 right-10 text-neutral-400 text-3xl cursor-pointer hover:text-neutral-200"
+        title="Close"
+      >
+        ✕
+      </span>
+
       <JournalEntryAnalysis data={analysisData} />
+
+      {/* Analyze Button */}
+      <div className="flex justify-center mt-6 mb-4">
+        <button
+          onClick={() =>
+            router.push({
+              pathname: '/analyze',
+              query: { prompt: encodeURIComponent('Analyze my most recent entry for me') },
+            })
+          }
+          className="px-12 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg border border-neutral-600"
+        >
+          Analyze
+        </button>
+      </div>
     </div>
   </div>
 )}
