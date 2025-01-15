@@ -86,13 +86,12 @@ const NewEntry = () => {
 
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
-        <button
-          onClick={() => entry.trim() && setShowDeleteDialog(true)}
-          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
-          disabled={!entry.trim()}
-        >
-          <Trash2 className="w-5 h-5 text-neutral-400" />
-        </button>
+      <button
+    onClick={() => setShowDeleteDialog(true)} // No condition for enabling/disabling
+    className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors border border-neutral-700"
+  >
+    <Trash2 className="w-5 h-5 text-neutral-400" />
+  </button>
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
