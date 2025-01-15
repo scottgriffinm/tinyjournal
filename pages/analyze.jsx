@@ -11,7 +11,6 @@ import {
   Plus,
 } from 'lucide-react';
 
-// NEW IMPORTS for your graphs:
 import EntryEmotionGraph from '../components/graphs/EntryEmotionGraph';
 import EntryHistoryChart from '../components/graphs/EntryHistoryChart';
 
