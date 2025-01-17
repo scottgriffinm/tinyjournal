@@ -44,8 +44,10 @@ const NewEntry = () => {
         setShowSaveDialog(false);
 
         const data = await response.json();
-       
-        // 3) Provide *placeholder* data for JournalEntryAnalysis:
+       console.log('data.happiness:', data.happiness);
+       console.log('data.connection:', data.connection);
+       console.log('data.productivity:', data.productivity);
+        // Fill analysis data
         setAnalysisData({
           entryNumber: data.entryNumber,
           entryDatetime: new Date().toLocaleString(),
@@ -53,15 +55,14 @@ const NewEntry = () => {
           longSummary: data.longSummary,
           recommendations: data.recommendations,
           metrics: {
-            happiness: data.happiness,
-            connection: data.connection,
-            productivity: data.productivity,
+            happiness: data.happiness*100,
+            connection: data.connection*100,
+            productivity: data.productivity*100,
           },
         });
 
-        // 4) Make the panel “swipe up” by toggling `analysisOpen`
+        // Open journal analysis component
         setAnalysisOpen(true);
-
 
       } else {
         const errorData = await response.json();

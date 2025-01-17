@@ -112,7 +112,6 @@ const constructAllEntriesString = (selectedEntryData, text) => {
   return selectedEntryDataString;
 };
 
-
 /**
  * Constructs a prompt for generating an observation about the user's entries.
  *
@@ -125,7 +124,14 @@ const constructAllEntriesString = (selectedEntryData, text) => {
  */
 const constructObservationPrompt = (selectedEntryDataString) => {
   // Start constructing the prompt
-  let prompt = `I want you to give an observation about the user's entries that relates to the most recent entry. Your observation should be no more than one brief sentence.\n\n`;
+  let prompt = `I want you to give an trend observation about the user's entries that relates to the most recent entry. Your observation should be no more than one brief sentence. The observation should be relevant for the users most recent entry but keep all past entries in mind.
+  The observation should be short enough to have no commas. 
+  \n\nHere are some example observations:\n
+  You seem to feel more productive and energized on Mondays.\n
+  This has been a very happy week for you.\n
+  You seem to feel sad on Sundays.\n
+  It seems like being around friends always cheers you up.
+  \n\n`;
   prompt += selectedEntryDataString;
   return prompt;
 };
@@ -142,12 +148,15 @@ const constructObservationPrompt = (selectedEntryDataString) => {
  */
 const constructRecommendationsPrompt = (selectedEntryDataString) => {
   // Start constructing the prompt
-  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. \n\n`;
+  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. 
+  \n
+  The first recommendation should be related to happiness.\n
+  The first recommendation should be related to connection.\n
+  The first recommendation should be related to productivity.\n
+  \n\n`;
   prompt += selectedEntryDataString;
   return prompt;
 };
-
-
 
 
 // ==============================
@@ -211,23 +220,13 @@ export default async function handler(req, res) {
     const emotionValuesResponse = await promptGemini(emotionValuesPrompt);
     const emotionValuesJSON = extractJSON(emotionValuesResponse);
     console.log(emotionValuesJSON);
-    const happiness = emotionValuesJSON['happiness'];
-    const connection = emotionValuesJSON['connection'];
-    const productivity = emotionValuesJSON['productivity'];
+    const happiness = emotionValuesJSON.happiness;
+    const connection = emotionValuesJSON.connection;
+    const productivity = emotionValuesJSON.productivity;
 
     // Generate long summary
     const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
     const longSummary = await promptGemini(longSummaryPrompt);
-
-    // Make id
-    const id = uuidv4();
-    const dateTime = new Date();
-
-    // Save to database
-    await pool.query(
-      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, token.email, dateTime, shortSummary, longSummary, text, JSON.stringify(emotionValuesJSON)]
-    );
 
     // Get observation & recommendations
     // Get relevant entry data (dateTime, longSummary, emotions)
@@ -250,7 +249,17 @@ export default async function handler(req, res) {
     const recommendations = extractList(recommendationsString);
 
     // Get total number of entries
-    const entryNumber = selectedEntryData.length;
+    const entryNumber = selectedEntryData.length + 1; 
+
+    // Make id
+    const id = uuidv4();
+    const dateTime = new Date();
+
+    // Save to database
+    await pool.query(
+      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, token.email, dateTime, shortSummary, longSummary, text, JSON.stringify(emotionValuesJSON)]
+    );
 
     res.status(201).json({ message: 'Entry created successfully', entryNumber, observation, longSummary, recommendations, happiness, connection, productivity});
   } catch (error) {
