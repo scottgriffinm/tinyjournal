@@ -18,7 +18,11 @@ export default async function handler(req, res) {
     const [entry] = await pool.query(
       `SELECT 
          DATE_FORMAT(dateTime, "%m/%d/%y %h:%i %p") as formattedDateTime, 
-         text 
+         text, 
+         longSummary, 
+         emotions, 
+         observation, 
+         recommendations 
        FROM entries 
        WHERE id = ? AND email = ?`,
       [id, token.email]

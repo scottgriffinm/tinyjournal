@@ -73,10 +73,11 @@ export default function JournalEntryAnalysis({ data }) {
     } = data;
   
     return (
-      <div className="bg-neutral-900 p-6 rounded-lg border border-neutral-800 space-y-8 font-mono">
+      <div className="bg-neutral-900 p-6 rounded-lg space-y-8 font-mono">
         {/* Entry Header */}
         <div className="space-y-1">
-          <h1 className="text-2xl text-neutral-300">Entry #{entryNumber}</h1>
+
+          {entryNumber && <h1 className="text-2xl text-neutral-300">Entry #{entryNumber}</h1>}
           <p className="text-lg text-neutral-400">{entryDatetime}</p>
           <p className="text-neutral-500 mt-2">{observation}</p>
         </div>

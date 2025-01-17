@@ -1,10 +1,12 @@
 import os
 
-def generate_directory_contents_file(output_file, exclude_folders=None, exclude_files=None):
+def generate_directory_contents_file(output_file, exclude_folders=None, exclude_files=None, include_files=None):
     if exclude_folders is None:
         exclude_folders = []
     if exclude_files is None:
         exclude_files = []
+    if include_files is None:
+        include_files = []
     
     # Add this script to excluded files
     current_script = os.path.basename(__file__)
@@ -17,13 +19,18 @@ def generate_directory_contents_file(output_file, exclude_folders=None, exclude_
             
             for file in files:
                 file_path = os.path.join(root, file)
-                
-                # Skip excluded files
-                if any(ex_file in file_path for ex_file in exclude_files):
-                    continue
+                relative_path = os.path.relpath(file_path, start='.')
+
+                # Handle the include_files list if provided
+                if include_files:
+                    if relative_path not in include_files:
+                        continue
+                else:
+                    # Skip excluded files if include_files is not used
+                    if any(ex_file in file_path for ex_file in exclude_files):
+                        continue
                 
                 # Write the file path as a section header
-                relative_path = os.path.relpath(file_path, start='.')
                 out_file.write(f'{relative_path}:\n\n')
                 
                 # Write the file contents
@@ -40,8 +47,18 @@ if __name__ == '__main__':
     output_filename = 'dir_prompt.txt'
     
     # Exclusions (adjust these as needed)
-    exclude_folders = ['./node_modules', './.next', './public', './public', './.git', output_filename]
+    exclude_folders = ['./node_modules', './.next', './public', './.git', output_filename]
     exclude_files = ['package-lock.json', 'package.json', '.gitignore', '.env.local']
     
-    generate_directory_contents_file(output_filename, exclude_folders, exclude_files)
+    # Specify the files to include (leave empty to include all files except exclusions)
+    include_files = [
+        'pages/api/create-entry.js',
+        'pages/api/get-entries.js',
+        'pages/api/get-entry.js',
+        'pages/index.jsx',
+        'pages/new-entry.jsx',
+        'lib/localStorageCache.js',
+    ]
+    
+    generate_directory_contents_file(output_filename, exclude_folders, exclude_files, include_files)
     print(f"Directory contents written to {output_filename}")

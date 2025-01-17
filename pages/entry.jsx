@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowLeft } from "lucide-react";
 import { getCache, setCache } from "../lib/localStorageCache";
+import JournalEntryAnalysis from "../components/dashboards/JournalEntryAnalysis"; // Import the analysis component
 
 const CACHE_KEY_PREFIX = "entry_";
 
@@ -53,6 +54,7 @@ const EntryView = () => {
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
       <div className="max-w-2xl mx-auto">
+        {/* Header with back button and date */}
         <div className="flex justify-between items-center mb-8">
           <ArrowLeft
             className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
@@ -60,9 +62,27 @@ const EntryView = () => {
           />
           <span className="text-neutral-500">{entry.formattedDateTime}</span>
         </div>
-        <div className="whitespace-pre-wrap leading-relaxed text-neutral-300">
+
+        {/* Journal entry text */}
+        <div className="whitespace-pre-wrap leading-relaxed text-neutral-300 mb-8">
           {entry.text}
         </div>
+
+        {/* Journal analysis section */}
+        <JournalEntryAnalysis
+          data={{
+            entryNumber: null, // Use ID as the entry number for simplicity
+            entryDatetime: null,
+            observation: entry.observation,
+            longSummary: entry.longSummary,
+            recommendations: entry.recommendations,
+            metrics: {
+              happiness: entry.emotions.happiness * 100,
+              connection: entry.emotions.connection * 100,
+              productivity: entry.emotions.productivity * 100,
+            },
+          }}
+        />
       </div>
     </div>
   );

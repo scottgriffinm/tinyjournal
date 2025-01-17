@@ -3,7 +3,6 @@ import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "journalEntries";
-const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Home = () => {
   const router = useRouter();
@@ -27,7 +26,7 @@ const Home = () => {
         if (res.ok) {
           setEntries(data.entries);
           // Store data in localStorage with a TTL (in minutes)
-          setCache(CACHE_KEY, data.entries, CACHE_TTL * 60 * 1000); // 5 minutes
+          setCache(CACHE_KEY, data.entries);
         } else {
           console.error("Error fetching entries:", data.error);
         }

@@ -18,6 +18,8 @@ export default async function handler(req, res) {
       [token.email]
     );
 
+    console.log(entries);
+
     res.status(200).json({ entries });
   } catch (error) {
     console.error('Error fetching entries:', error);

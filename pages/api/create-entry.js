@@ -149,10 +149,6 @@ const constructObservationPrompt = (selectedEntryDataString) => {
 const constructRecommendationsPrompt = (selectedEntryDataString) => {
   // Start constructing the prompt
   let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. 
-  \n
-  The first recommendation should be related to happiness.\n
-  The first recommendation should be related to connection.\n
-  The first recommendation should be related to productivity.\n
   \n\n`;
   prompt += selectedEntryDataString;
   return prompt;
@@ -197,7 +193,7 @@ export default async function handler(req, res) {
     };
 
     // Generate short summary
-    const shortSummary = text.slice(0,28) + "...";
+    const shortSummary = text.slice(0, 28) + "...";
 
     // Get emotion values from 0-1 for happiness, connection, and productivity
     const emotionValuesPrompt = `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
@@ -238,7 +234,7 @@ export default async function handler(req, res) {
     }
     // Make combined string of all entries
     const allEntriesString = constructAllEntriesString(selectedEntryData, text);
-    
+
     // Get observation
     const observationPrompt = constructObservationPrompt(allEntriesString);
     const observation = await promptGemini(observationPrompt);
@@ -249,7 +245,7 @@ export default async function handler(req, res) {
     const recommendations = extractList(recommendationsString);
 
     // Get total number of entries
-    const entryNumber = selectedEntryData.length + 1; 
+    const entryNumber = selectedEntryData.length + 1;
 
     // Make id
     const id = uuidv4();
@@ -257,11 +253,22 @@ export default async function handler(req, res) {
 
     // Save to database
     await pool.query(
-      'INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, token.email, dateTime, shortSummary, longSummary, text, JSON.stringify(emotionValuesJSON)]
+      `INSERT INTO entries (id, email, dateTime, shortSummary, longSummary, text, emotions, observation, recommendations) 
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        token.email,
+        dateTime,
+        shortSummary,
+        longSummary,
+        text,
+        JSON.stringify(emotionValuesJSON),
+        observation,
+        JSON.stringify(recommendations)
+      ]
     );
 
-    res.status(201).json({ message: 'Entry created successfully', entryNumber, observation, longSummary, recommendations, happiness, connection, productivity});
+    res.status(201).json({ message: 'Entry created successfully', id, entryNumber, dateTime, observation, shortSummary, longSummary, recommendations, happiness, connection, productivity });
   } catch (error) {
     console.error('Error creating entry:', error);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -12,6 +12,8 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import JournalEntryAnalysis from '../components/dashboards/JournalEntryAnalysis';
+import { updateCache } from '../lib/localStorageCache'; // Import caching functions
+const CACHE_KEY = "journalEntries";
 
 const NewEntry = () => {
   const router = useRouter();
@@ -40,10 +42,24 @@ const NewEntry = () => {
 
       if (response.ok) {
         console.log('Entry successfully saved!');
+        const data = await response.json();
+      
+        // Update cache with the new entry
+        const newEntry = {
+          id: data.id,
+          formattedDate: new Date(data.dateTime).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: '2-digit',
+          }),
+          shortSummary: data.shortSummary,
+        };
+        updateCache(CACHE_KEY, newEntry);
+
+        // Remove entry text
         setEntry('');
         setShowSaveDialog(false);
 
-        const data = await response.json();
        console.log('data.happiness:', data.happiness);
        console.log('data.connection:', data.connection);
        console.log('data.productivity:', data.productivity);
