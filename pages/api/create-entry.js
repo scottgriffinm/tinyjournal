@@ -148,7 +148,7 @@ const constructObservationPrompt = (selectedEntryDataString) => {
  */
 const constructRecommendationsPrompt = (selectedEntryDataString) => {
   // Start constructing the prompt
-  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. 
+  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be most specifically about the most recent entry, but should keep the users history in mind. The recommendations should be relevant to what the users says in their most recent entry. Do not respond with anything but the three recommendations, separated by three newlines each. Do under any circumstances recommend that the user use a different journaling app.
   \n\n`;
   prompt += selectedEntryDataString;
   return prompt;

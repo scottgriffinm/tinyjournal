@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * CircularProgress Component
@@ -11,38 +12,64 @@ import React from 'react';
  * @returns {JSX.Element} A circular progress indicator with a customizable label
  */
 const CircularProgress = ({ value, color, label }) => {
-    return (
-      <div className="flex flex-col items-center space-y-3">
-        {/* Container for the progress circle */}
-        <div className="relative w-24 h-24">
-          {/* SVG container for the circular progress */}
-          <svg className="w-24 h-24 transform -rotate-90">
-            {/* Background circle (static) */}
-            <circle
-              cx="48" 
-              cy="48"
-              r="40" 
-              className="fill-none stroke-neutral-800" 
-              strokeWidth="12"
-            />
-            {/* Progress circle (dynamic) */}
-            <circle
-              cx="48"
-              cy="48"
-              r="40"
-              className={`fill-none ${color}`}
-              strokeWidth="12" 
-              strokeDasharray={251.33}
-              strokeDashoffset={251.33 * (1 - value / 100)}
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-        {/* Optional label displayed below the progress circle */}
-        <span className="text-sm font-mono text-neutral-400">{label}</span>
+  // State to track screen size
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // Effect to track window size and update `isSmallScreen`
+  useEffect(() => {
+    const updateScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 350); // Small screen if width < 640px
+    };
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+    return () => window.removeEventListener('resize', updateScreenSize);
+  }, []);
+
+  // Conditional values for small vs large screens
+  const size = isSmallScreen ? 64 : 96; // Circle size
+  const radius = isSmallScreen ? 28 : 40; // Circle radius
+  const strokeWidth = isSmallScreen ? 8 : 12; // Stroke width
+  const circumference = 2 * Math.PI * radius; // Circumference
+
+  return (
+    <div className={`flex flex-col items-center ${isSmallScreen ? 'space-y-2' : 'space-y-3'}`}>
+      {/* Container for the progress circle */}
+      <div style={{ width: size, height: size }} className="relative">
+        {/* SVG container for the circular progress */}
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          className="transform -rotate-90"
+        >
+          {/* Background circle (static) */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className="fill-none stroke-neutral-800"
+            strokeWidth={strokeWidth}
+          />
+          {/* Progress circle (dynamic) */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            className={`fill-none ${color}`}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - value / 100)}
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
-    );
-  };
+      {/* Optional label displayed below the progress circle */}
+      <span className={`${isSmallScreen ? 'text-xs' : 'text-sm'} font-mono text-neutral-400`}>
+        {label}
+      </span>
+    </div>
+  );
+};
 
 /**
  * JournalEntryAnalysis Component
@@ -73,10 +100,9 @@ export default function JournalEntryAnalysis({ data }) {
     } = data;
   
     return (
-      <div className="bg-neutral-900 p-6 rounded-lg space-y-8 font-mono">
+      <div className="bg-neutral-900 p-6 px-0 rounded-lg space-y-8 font-mono">
         {/* Entry Header */}
         <div className="space-y-1">
-
           {entryNumber && <h1 className="text-2xl text-neutral-300">Entry #{entryNumber}</h1>}
           <p className="text-lg text-neutral-400">{entryDatetime}</p>
           <p className="text-neutral-500 mt-2">{observation}</p>

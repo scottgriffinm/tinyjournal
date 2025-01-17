@@ -68,6 +68,11 @@ const EntryView = () => {
           {entry.text}
         </div>
 
+
+        {/* Spacer to push analysis section down by one full page */}
+        <div className="h-screen"></div> {/* Full-page height spacer */}
+
+
         {/* Journal analysis section */}
         <JournalEntryAnalysis
           data={{
