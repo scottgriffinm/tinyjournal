@@ -129,7 +129,7 @@ const constructObservationPrompt = (selectedEntryDataString) => {
   \n\nHere are some example observations:\n
   You seem to feel more productive and energized on Mondays.\n
   This has been a very happy week for you.\n
-  You seem to feel sad on Sundays.\n
+  You seem to feel happy on Sundays.\n
   It seems like being around friends always cheers you up.
   \n\n`;
   prompt += selectedEntryDataString;
