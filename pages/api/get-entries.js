@@ -1,6 +1,7 @@
 import pool from '../../lib/db';
 import { getToken } from 'next-auth/jwt';
 
+// handler for get-entries.js
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);
