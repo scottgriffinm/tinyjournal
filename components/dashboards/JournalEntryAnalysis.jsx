@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * CircularProgress Component
@@ -12,37 +12,39 @@ import { useState, useEffect } from 'react';
  * @returns {JSX.Element} A circular progress indicator with a customizable label
  */
 const CircularProgress = ({ value, color, label }) => {
-  // State to track screen size
+  const circleRef = useRef(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-  // Effect to track window size and update `isSmallScreen`
   useEffect(() => {
     const updateScreenSize = () => {
-      setIsSmallScreen(window.innerWidth < 350); // Small screen if width < 640px
+      setIsSmallScreen(window.innerWidth < 350);
     };
     updateScreenSize();
     window.addEventListener('resize', updateScreenSize);
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);
 
-  // Conditional values for small vs large screens
-  const size = isSmallScreen ? 64 : 96; // Circle size
-  const radius = isSmallScreen ? 28 : 40; // Circle radius
-  const strokeWidth = isSmallScreen ? 8 : 12; // Stroke width
-  const circumference = 2 * Math.PI * radius; // Circumference
+  const size = isSmallScreen ? 64 : 96;
+  const radius = isSmallScreen ? 28 : 40;
+  const strokeWidth = isSmallScreen ? 8 : 12;
+  const circumference = 2 * Math.PI * radius;
+
+  // Direct DOM manipulation for instant animation
+  useEffect(() => {
+    if (circleRef.current) {
+      circleRef.current.style.strokeDashoffset = circumference * (1 - value / 100);
+    }
+  }, [value, circumference]);
 
   return (
     <div className={`flex flex-col items-center ${isSmallScreen ? 'space-y-2' : 'space-y-3'}`}>
-      {/* Container for the progress circle */}
       <div style={{ width: size, height: size }} className="relative">
-        {/* SVG container for the circular progress */}
         <svg
           width={size}
           height={size}
           viewBox={`0 0 ${size} ${size}`}
           className="transform -rotate-90"
         >
-          {/* Background circle (static) */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -50,20 +52,22 @@ const CircularProgress = ({ value, color, label }) => {
             className="fill-none stroke-neutral-800"
             strokeWidth={strokeWidth}
           />
-          {/* Progress circle (dynamic) */}
           <circle
+            ref={circleRef}
             cx={size / 2}
             cy={size / 2}
             r={radius}
             className={`fill-none ${color}`}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
-            strokeDashoffset={circumference * (1 - value / 100)}
+            strokeDashoffset={circumference}
             strokeLinecap="round"
+            style={{
+              transition: 'stroke-dashoffset 0.8s ease-in-out',
+            }}
           />
         </svg>
       </div>
-      {/* Optional label displayed below the progress circle */}
       <span className={`${isSmallScreen ? 'text-xs' : 'text-sm'} font-mono text-neutral-400`}>
         {label}
       </span>
