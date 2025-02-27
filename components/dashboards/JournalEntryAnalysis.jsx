@@ -143,11 +143,11 @@ export default function JournalEntryAnalysis({ data }) {
               >
                 {/* Rotated colored circle */}
                 <div 
-                  className={`absolute top-0 left-0 w-16 h-20 transform rotate-90 translate-x-[-45px] translate-y-[-45px] z-0 
+                  className={`absolute top-0 left-0 w-16 h-20 transform rotate-45 translate-x-[-50px] translate-y-[-50px] z-0 
                     ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-blue-500' : index === 2 ? 'bg-orange-500' : 'bg-neutral-700'}
                     rounded-full`}
                 ></div>
-                <span className="relative z-10 text-neutral-300 p-2">{rec}</span>
+                <span className="relative z-10 text-neutral-300">{rec}</span>
               </div>
             ))}
           </div>
