@@ -229,7 +229,7 @@ export default async function handler(req, res) {
     const productivity = emotionValuesJSON.productivity;
 
     // Generate long summary
-    const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. The summary should be at most 200 characters, and should cover ALL essential details and important events. List all events and feelings. List all events and feelings and don't forget any. :\n\n${text}`;
+    const longSummaryPrompt = `Provide a summary of ALL events and feelings for the following journal entry. Refer to the user in second person. The summary should be at most 200 characters, and should cover ALL essential details and important events. Describe all events and feelings. Describe all events and feelings and don't forget any. :\n\n${text}`;
     const longSummary = await promptGemini(longSummaryPrompt);
 
     // Get observation & recommendations
