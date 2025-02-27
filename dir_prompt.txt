@@ -82,23 +82,46 @@ export function updateCache(key, newItem, ttlMs = 5 * 60 * 1000) {
     if (typeof window === 'undefined') return;
 
     const cachedString = localStorage.getItem(key);
-    let cachedData = {};
+    let cachedData;
+    let isExpired = false;
+    let cacheExists = true;
 
     if (cachedString) {
         try {
             const parsedCache = JSON.parse(cachedString);
             const { data, expiry } = parsedCache;
 
-            if (expiry && Date.now() <= expiry) {
-                cachedData = data;
+            // Check if the cache is expired
+            if (!expiry || Date.now() > expiry) {
+                console.log("Cache expired, not updating the cache for key:", key);
+                isExpired = true;
+            } else {
+                cachedData = data; // Use existing cached data
             }
         } catch (error) {
-            console.error("Error parsing cache, resetting with new item:", error);
+            console.error("Error parsing existing cache for key:", key, error);
+            cacheExists = false; // Treat as if no valid cache exists
         }
+    } else {
+        console.log("No cache found for key:", key);
+        cacheExists = false; // No cache exists
     }
 
-    cachedData = { ...cachedData, ...newItem };
+    if (isExpired || !cacheExists) return; // Do nothing if cache is expired or doesn't exist
 
+    // Handle journalEntries as a list
+    if (key === "journalEntries") {
+        if (!Array.isArray(cachedData)) {
+            console.warn(`Expected an array for key "${key}", resetting to empty array.`);
+            cachedData = [];
+        }
+        cachedData.unshift(newItem); // Add the new item to the array
+    } else {
+        // Handle other keys as objects
+        cachedData = { ...cachedData, ...newItem };
+    }
+
+    // Save the updated cache back with the new expiry time
     const expiry = Date.now() + ttlMs;
     const updatedCache = { data: cachedData, expiry };
     localStorage.setItem(key, JSON.stringify(updatedCache));
@@ -122,6 +145,8 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import JournalEntryAnalysis from '../components/dashboards/JournalEntryAnalysis';
+import { updateCache } from '../lib/localStorageCache'; // Import caching functions
+const CACHE_KEY = "journalEntries";
 
 const NewEntry = () => {
   const router = useRouter();
@@ -150,10 +175,24 @@ const NewEntry = () => {
 
       if (response.ok) {
         console.log('Entry successfully saved!');
+        const data = await response.json();
+      
+        // Update cache with the new entry
+        const newEntry = {
+          id: data.id,
+          formattedDate: new Date(data.dateTime).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: '2-digit',
+          }),
+          shortSummary: data.shortSummary,
+        };
+        updateCache(CACHE_KEY, newEntry);
+
+        // Remove entry text
         setEntry('');
         setShowSaveDialog(false);
 
-        const data = await response.json();
        console.log('data.happiness:', data.happiness);
        console.log('data.connection:', data.connection);
        console.log('data.productivity:', data.productivity);
@@ -351,7 +390,6 @@ import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "journalEntries";
-const CACHE_TTL = process.env.NEXT_PUBLIC_CACHE_TTL;
 
 const Home = () => {
   const router = useRouter();
@@ -375,7 +413,7 @@ const Home = () => {
         if (res.ok) {
           setEntries(data.entries);
           // Store data in localStorage with a TTL (in minutes)
-          setCache(CACHE_KEY, data.entries, CACHE_TTL * 60 * 1000); // 5 minutes
+          setCache(CACHE_KEY, data.entries);
         } else {
           console.error("Error fetching entries:", data.error);
         }
@@ -593,7 +631,7 @@ const constructObservationPrompt = (selectedEntryDataString) => {
   \n\nHere are some example observations:\n
   You seem to feel more productive and energized on Mondays.\n
   This has been a very happy week for you.\n
-  You seem to feel sad on Sundays.\n
+  You seem to feel happy on Sundays.\n
   It seems like being around friends always cheers you up.
   \n\n`;
   prompt += selectedEntryDataString;
@@ -612,7 +650,7 @@ const constructObservationPrompt = (selectedEntryDataString) => {
  */
 const constructRecommendationsPrompt = (selectedEntryDataString) => {
   // Start constructing the prompt
-  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be specifically about the most recent entry, but should keep all previous entries in mind. Do not respond with anything but the three recommendations, separated by three newlines each. 
+  let prompt = `I want you to return ONLY three distinct recommendations, each separated by three newlines. The recommendations should be most specifically about the most recent entry, but should keep the users history in mind. The recommendations should be relevant to what the users says in their most recent entry. Do not respond with anything but the three recommendations, separated by three newlines each. Do under any circumstances recommend that the user use a different journaling app.
   \n\n`;
   prompt += selectedEntryDataString;
   return prompt;
@@ -732,7 +770,7 @@ export default async function handler(req, res) {
       ]
     );
 
-    res.status(201).json({ message: 'Entry created successfully', entryNumber, observation, longSummary, recommendations, happiness, connection, productivity });
+    res.status(201).json({ message: 'Entry created successfully', id, entryNumber, dateTime, observation, shortSummary, longSummary, recommendations, happiness, connection, productivity });
   } catch (error) {
     console.error('Error creating entry:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -803,7 +841,7 @@ export default async function handler(req, res) {
        WHERE id = ? AND email = ?`,
       [id, token.email]
     );
-
+    
     if (entry.length === 0) {
       return res.status(404).json({ error: 'Entry not found' });
     }

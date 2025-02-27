@@ -20,6 +20,7 @@ const NewEntry = () => {
   const [entry, setEntry] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // New state for loader
   const [analysisData, setAnalysisData] = useState(null);
   const [analysisOpen, setAnalysisOpen] = useState(false);
@@ -83,9 +84,11 @@ const NewEntry = () => {
       } else {
         const errorData = await response.json();
         console.error('Error saving entry:', errorData.error);
+        setShowErrorDialog(true);
       }
     } catch (error) {
       console.error('Error saving entry:', error);
+      setShowErrorDialog(true);
     } finally {
       setIsSaving(false); // Stop loader
     }
@@ -176,6 +179,26 @@ const NewEntry = () => {
             >
               save
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+       {/* Error Dialog */}
+       <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-neutral-300">Error</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-400">
+              there was an error saving your entry, please try again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+          <AlertDialogCancel
+              className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
+              onClick={() => setShowErrorDialog(false)}
+            >
+              close
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
