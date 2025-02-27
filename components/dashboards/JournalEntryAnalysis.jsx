@@ -132,7 +132,6 @@ export default function JournalEntryAnalysis({ data }) {
           <h3 className="text-lg text-neutral-300">Summary</h3>
           <p className="text-neutral-400 leading-relaxed">{longSummary}</p>
         </div>
-  
         {/* Recommendations Section */}
         <div className="space-y-4">
           <h3 className="text-lg text-neutral-300">Recommendations</h3>
@@ -140,9 +139,15 @@ export default function JournalEntryAnalysis({ data }) {
             {recommendations.map((rec, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700 hover:bg-neutral-800 transition-colors"
+                className="relative flex items-center p-3 bg-neutral-800/50 rounded-lg border border-neutral-700 hover:bg-neutral-800 transition-colors overflow-hidden"
               >
-                <span className="text-neutral-300">{rec}</span>
+                {/* Rotated colored circle */}
+                <div 
+                  className={`absolute top-0 left-0 w-16 h-20 transform rotate-90 translate-x-[-45px] translate-y-[-45px] z-0 
+                    ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-blue-500' : index === 2 ? 'bg-orange-500' : 'bg-neutral-700'}
+                    rounded-full`}
+                ></div>
+                <span className="relative z-10 text-neutral-300 p-2">{rec}</span>
               </div>
             ))}
           </div>
