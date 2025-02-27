@@ -109,7 +109,7 @@ export default function JournalEntryAnalysis({ data }) {
         </div>
   
         {/* Metrics Section */}
-        <div className="flex justify-between items-center max-w-lg md:max-w-sm mx-auto md:ml-2">
+        <div className="flex justify-between items-center max-w-lg max-w-sm mx-auto ml-2">
           <CircularProgress
             value={metrics.happiness}
             color="stroke-green-500"
@@ -143,7 +143,7 @@ export default function JournalEntryAnalysis({ data }) {
               >
                 {/* Rotated colored circle */}
                 <div 
-                  className={`absolute top-0 left-0 w-16 h-20 transform rotate-45 translate-x-[-50px] translate-y-[-50px] z-0 
+                  className={`absolute top-0 left-0 w-20 h-20 transform rotate-45 translate-x-[-58px] translate-y-[-58px] z-0 
                     ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-blue-500' : index === 2 ? 'bg-orange-500' : 'bg-neutral-700'}
                     rounded-full`}
                 ></div>
