@@ -250,8 +250,14 @@ const Analyze = () => {
   // Gather url query prompt
   useEffect(() => {
     const queryPrompt = router.query.prompt;
+    // if url query prompt present immediately send
     if (queryPrompt) {
-      setInput(decodeURIComponent(queryPrompt));
+      const decodedPrompt = decodeURIComponent(queryPrompt);
+      setInput(decodedPrompt);
+      handleSend(decodedPrompt);
+      // setTimeout(() => {
+      //   handleSend(decodedPrompt);
+      // }, 100);
     }
   }, [router.query]);
 
