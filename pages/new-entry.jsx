@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from "next/router";
-import { Trash2, Save } from 'lucide-react';
+import { Trash2, Save, ArrowUp } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +23,7 @@ const NewEntry = () => {
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // New state for loader
   const [analysisData, setAnalysisData] = useState(null);
+  const [input, setInput] = useState('');
   const [analysisOpen, setAnalysisOpen] = useState(false);
 
   const handleDelete = () => {
@@ -44,7 +45,7 @@ const NewEntry = () => {
       if (response.ok) {
         console.log('Entry successfully saved!');
         const data = await response.json();
-      
+
         // Update cache with the new entry
         const newEntry = {
           id: data.id,
@@ -61,9 +62,9 @@ const NewEntry = () => {
         setEntry('');
         setShowSaveDialog(false);
 
-       console.log('data.happiness:', data.happiness);
-       console.log('data.connection:', data.connection);
-       console.log('data.productivity:', data.productivity);
+        console.log('data.happiness:', data.happiness);
+        console.log('data.connection:', data.connection);
+        console.log('data.productivity:', data.productivity);
         // Fill analysis data
         setAnalysisData({
           entryNumber: data.entryNumber,
@@ -72,9 +73,9 @@ const NewEntry = () => {
           longSummary: data.longSummary,
           recommendations: data.recommendations,
           metrics: {
-            happiness: data.happiness*100,
-            connection: data.connection*100,
-            productivity: data.productivity*100,
+            happiness: data.happiness * 100,
+            connection: data.connection * 100,
+            productivity: data.productivity * 100,
           },
         });
 
@@ -106,12 +107,12 @@ const NewEntry = () => {
 
       {/* Floating buttons container */}
       <div className="absolute top-4 right-4 flex space-x-4 z-10">
-      <button
-    onClick={() => setShowDeleteDialog(true)} // No condition for enabling/disabling
-    className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors border border-neutral-700"
-  >
-    <Trash2 className="w-5 h-5 text-neutral-400" />
-  </button>
+        <button
+          onClick={() => setShowDeleteDialog(true)} // No condition for enabling/disabling
+          className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors border border-neutral-700"
+        >
+          <Trash2 className="w-5 h-5 text-neutral-400" />
+        </button>
         <button
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
@@ -183,8 +184,8 @@ const NewEntry = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-       {/* Error Dialog */}
-       <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+      {/* Error Dialog */}
+      <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
         <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-neutral-300">Error</AlertDialogTitle>
@@ -193,7 +194,7 @@ const NewEntry = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-          <AlertDialogCancel
+            <AlertDialogCancel
               className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
               onClick={() => setShowErrorDialog(false)}
             >
@@ -204,48 +205,77 @@ const NewEntry = () => {
       </AlertDialog>
 
 
-{/* Analysis panel */}
-{analysisData && (
-  <div
-    className={`
+      {/* Analysis panel */}
+      {analysisData && (
+        <div
+          className={`
       fixed bottom-0 left-0 w-full h-[100vh]
       bg-neutral-900
       z-40
       border-t border-neutral-700
       overflow-hidden
     `}
-  >
-    {/* Scrollable Content */}
-    <div className="h-full w-full overflow-y-auto scroll-smooth p-4 relative">
-      
-      {/* Close Button */}
-      <span
-        onClick={() => router.push("/")}
-        className="absolute top-8 right-10 text-neutral-400 text-3xl cursor-pointer hover:text-neutral-200"
-        title="Close"
-      >
-        ✕
-      </span>
-
-      <JournalEntryAnalysis data={analysisData} />
-
-      {/* Analyze Button */}
-      <div className="flex justify-center mt-6 mb-4">
-        <button
-          onClick={() =>
-            router.push({
-              pathname: '/analyze',
-              query: { prompt: encodeURIComponent('Analyze my most recent entry for me') },
-            })
-          }
-          className="px-12 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg border border-neutral-600"
         >
-          Analyze
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          {/* Scrollable Content */}
+          <div className="h-full w-full overflow-y-auto scroll-smooth p-4 relative">
+
+            {/* Close Button */}
+            <span
+              onClick={() => router.push("/")}
+              className="absolute top-5 right-10 text-neutral-400 text-3xl cursor-pointer hover:text-neutral-200"
+              title="Close"
+            >
+              ✕
+            </span>
+
+            <JournalEntryAnalysis data={analysisData} />
+
+            {/* Analyze Input Area */}
+            <div className="pt-2 bg-neutral-900">
+              <div className="flex items-end space-x-2">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      input.trim() && router.push({
+                        pathname: '/analyze',
+                        query: { prompt: encodeURIComponent(input) }
+                      });
+                    }
+                  }}
+                  placeholder="Analyze your journal entry..."
+                  className="flex-1 bg-neutral-800/50 p-3 rounded-lg resize-none focus:outline-none
+                 min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
+                  style={{ lineHeight: '20px', height: '44px', minHeight: '44px' }}
+                  onInput={(e) => {
+                    const textarea = e.target;
+                    textarea.style.height = '44px';
+                    textarea.style.height = `${Math.max(
+                      textarea.scrollHeight,
+                      44
+                    )}px`;
+                  }}
+                />
+                <button
+                  onClick={() => input.trim() && router.push({
+                    pathname: '/analyze',
+                    query: { prompt: encodeURIComponent(input) }
+                  })}
+                  disabled={!input.trim()}
+                  className="bg-neutral-800/50 p-3 rounded hover:bg-neutral-800 transition-colors
+                 disabled:opacity-50 disabled:hover:bg-neutral-800"
+                >
+                  <ArrowUp className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
