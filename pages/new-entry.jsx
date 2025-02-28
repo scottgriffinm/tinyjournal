@@ -245,8 +245,8 @@ const NewEntry = () => {
                       });
                     }
                   }}
-                  placeholder="Analyze your journal entry..."
-                  className="flex-1 bg-neutral-800/50 p-3 rounded-lg resize-none focus:outline-none
+                  placeholder="Ask about your journal entry..."
+                  className="flex-1 bg-neutral-800/50 p-3 rounded resize-none focus:outline-none
                  min-h-[44px] max-h-32 overflow-y-auto border border-neutral-700"
                   style={{ lineHeight: '20px', height: '44px', minHeight: '44px' }}
                   onInput={(e) => {
