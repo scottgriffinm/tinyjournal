@@ -17,14 +17,15 @@ const EntryView = () => {
     const fetchEntry = async () => {
       const cacheKey = `${CACHE_KEY_PREFIX}${id}`;
       const cachedEntry = getCache(cacheKey);
-
+      
+      // If the entry is found in the cache, use it
       if (cachedEntry) {
-        // If the entry is found in the cache, use it
         console.log("Cache hit for entry:", cachedEntry);
         setEntry(cachedEntry);
         return;
       }
 
+      // else fetch entry
       try {
         const res = await fetch(`/api/get-entry?id=${id}`);
         const data = await res.json();
@@ -60,7 +61,7 @@ const EntryView = () => {
             className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
             onClick={() => router.push("/")}
           />
-          <span className="text-neutral-500">{entry.formattedDateTime}</span>
+          <span className="text-neutral-500">Entry #{entry.entryNumber} - {entry.formattedDateTime}</span>
         </div>
 
         {/* Journal entry text */}

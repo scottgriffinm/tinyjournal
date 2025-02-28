@@ -17,14 +17,20 @@ export default async function handler(req, res) {
 
     const [entry] = await pool.query(
       `SELECT 
-         DATE_FORMAT(dateTime, "%m/%d/%y %h:%i %p") as formattedDateTime, 
-         text, 
-         longSummary, 
-         emotions, 
-         observation, 
-         recommendations 
-       FROM entries 
-       WHERE id = ? AND email = ?`,
+         DATE_FORMAT(e.dateTime, "%m/%d/%y %h:%i %p") as formattedDateTime, 
+         e.text, 
+         e.longSummary, 
+         e.emotions, 
+         e.observation, 
+         e.recommendations,
+         (
+           SELECT COUNT(*) + 1 
+           FROM entries sub
+           WHERE sub.email = e.email 
+             AND sub.dateTime < e.dateTime
+         ) AS entryNumber
+       FROM entries e
+       WHERE e.id = ? AND e.email = ?`,
       [id, token.email]
     );
     
