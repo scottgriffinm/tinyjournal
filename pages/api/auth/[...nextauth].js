@@ -49,6 +49,7 @@ export default NextAuth({
       // Include the user's email and first name in the token during initial sign-in
       if (user) {
         token.email = user.email;
+        token.name = user.name;
         token.firstName = user.name.split(" ")[0]; // Extract the first name
       }
 
@@ -65,7 +66,9 @@ export default NextAuth({
       }
       session.accessToken = token.accessToken;
       session.user.email = token.email; // Include the email in the session
+      session.user.name = token.name;
       session.user.firstName = token.firstName; // Include the first name in the session
+      
       return session;
     },
     async redirect({ url, baseUrl }) {

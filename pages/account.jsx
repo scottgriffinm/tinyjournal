@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
+import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut, UserRound } from 'lucide-react';
+import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { signOut } from "next-auth/react";
 import {
@@ -26,6 +27,7 @@ const Account = ({ userEmail }) => {
         expiryDate: null,
         isRenewing: false,
     });
+    const [name, setName] = useState("");
     
     const plans = [
         {
@@ -83,8 +85,15 @@ const Account = ({ userEmail }) => {
             setLoading(false);
           }
         }
+        const fetchSession = async () => {
+            const session = await getSession();
+            if (session && session.user.name) {
+              setName(session.user.name);
+            }
+          };
     
         fetchSubscription();
+        fetchSession();
       }, []);
 
     const handleUpgrade = async () => {
@@ -134,7 +143,7 @@ const Account = ({ userEmail }) => {
 
     return (
         <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
-            <div className="max-w-2xl mx-auto space-y-8">
+            <div className="max-w-full mx-auto space-y-8">
                 <h1 className="text-2xl mb-8 flex items-center space-x-3">
                     <ArrowLeft
                         className="w-6 h-6 text-neutral-400 hover:text-neutral-300 cursor-pointer"
@@ -145,6 +154,10 @@ const Account = ({ userEmail }) => {
 
                 <div className="space-y-6">
                     <h2 className="text-lg text-neutral-400">profile</h2>
+                    <div className="bg-neutral-800/50 p-4 rounded-lg flex items-center space-x-3 border border-neutral-700">
+                        <UserRound className="w-5 h-5 text-neutral-500" />
+                        <span>{name || "Loading..."}</span>
+                    </div>
                     <div className="bg-neutral-800/50 p-4 rounded-lg flex items-center space-x-3 border border-neutral-700">
                         <Mail className="w-5 h-5 text-neutral-500" />
                         <span>{userEmail || "Loading..."}</span>
@@ -222,7 +235,7 @@ const Account = ({ userEmail }) => {
             </div>
 
             <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
-                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+                <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-neutral-300">Cancel Subscription Renewal</AlertDialogTitle>
                         <AlertDialogDescription className="text-neutral-400">
@@ -247,7 +260,7 @@ const Account = ({ userEmail }) => {
             </AlertDialog>
 
             <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-                <AlertDialogContent className="bg-neutral-800/50 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+                <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-neutral-300">Confirm Logout</AlertDialogTitle>
                         <AlertDialogDescription className="text-neutral-400">
@@ -262,7 +275,7 @@ const Account = ({ userEmail }) => {
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-neutral-700 hover:bg-neutral-600 text-neutral-300"
+                            className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-80"
                             onClick={handleLogout}
                         >
                             Logout
