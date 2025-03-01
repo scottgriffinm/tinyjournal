@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { getSession } from "next-auth/react";
 import { useRouter } from 'next/router';
 import {
   ArrowUp,
@@ -430,7 +431,6 @@ const Analyze = () => {
 };
 
 export async function getServerSideProps(context) {
-  const { getSession } = await import('next-auth/react');
   const session = await getSession(context);
 
   if (!session) {

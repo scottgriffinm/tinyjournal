@@ -3,7 +3,7 @@ import { signIn } from "next-auth/react";
 
 const Login = () => {
   const handleGoogleAuth = () => {
-    signIn("google", { callbackUrl: "/" }); // Redirect to /
+    signIn("google", { callbackUrl: "/" }); // Sign in and redirect to /
     console.log('Google auth clicked');
   };
 

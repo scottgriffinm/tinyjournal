@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Trash2, Save, ArrowUp } from 'lucide-react';
 import {
@@ -283,7 +284,6 @@ const NewEntry = () => {
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {
-  const { getSession } = await import('next-auth/react');
   const session = await getSession(context);
 
   if (!session) {

@@ -357,7 +357,6 @@ const Account = ({ userEmail }) => {
 };
 
 export async function getServerSideProps(context) {
-    const { getSession } = await import("next-auth/react");
     const session = await getSession(context);
 
     if (!session) {
