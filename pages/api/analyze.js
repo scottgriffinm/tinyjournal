@@ -67,6 +67,7 @@ Now the user is asking:
 
 Please provide a thoughtful, relevant, and concise response based on the user's journal summaries, past messages, and current message. Make sure to be thoughtful and as helpful and analytical as possible, but focus on positivity and always try to help the user.
 If you see any seriously concerning behavior, make sure to remind the user in an emergency they should call 911 and seek professional assistance. But only tell them once per conversation. Make sure to then actually try help them analyze any potential cognitive distortions and try to show them the brighter side of things.
+Keep it relatively concise.
     `.trim();
 
     // Call the Google Generative AI "gemini-1.5-flash" model
