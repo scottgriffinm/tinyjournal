@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut, UserRound } from 'lucide-react';
+import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut, UserRound, Eraser } from 'lucide-react';
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { signOut } from "next-auth/react";
@@ -22,6 +22,8 @@ const Account = ({ userEmail }) => {
     const [loading, setLoading] = useState(true);
     const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
+    const [showDeleteAccountErrorDialog, setShowDeleteAccountErrorDialog] = useState(false);
     const [subscription, setSubscription] = useState({
         tier: "free",
         expiryDate: null,
@@ -141,6 +143,13 @@ const Account = ({ userEmail }) => {
         signOut({ callbackUrl: "/login" });
     };
 
+    const handleDeleteAccount = async () => {
+        setShowDeleteAccountDialog(false);
+        setShowDeleteAccountErrorDialog(true);
+    };
+
+
+
     return (
         <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
             <div className="max-w-full mx-auto space-y-8">
@@ -222,7 +231,8 @@ const Account = ({ userEmail }) => {
                         )}
                     </div>
                 </div>
-
+            
+               <div className="space-y-6 pt-2">
                 <div className="">
                     <button
                         onClick={() => setShowLogoutDialog(true)}
@@ -232,8 +242,20 @@ const Account = ({ userEmail }) => {
                         <span>logout</span>
                     </button>
                 </div>
+
+                <div className="">
+                    <button
+                        onClick={() => setShowLogoutDialog(true)}
+                        className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
+                    >
+                        <Eraser className="w-5 h-5" />
+                        <span>delete account</span>
+                    </button>
+                </div>
+                </div>
             </div>
 
+            {/* Cancel Subscription Renewal Dialogue */}
             <AlertDialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
                 <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
                     <AlertDialogHeader>
@@ -259,6 +281,7 @@ const Account = ({ userEmail }) => {
                 </AlertDialogContent>
             </AlertDialog>
 
+            {/* Logout Dialogue */}
             <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
                 <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
                     <AlertDialogHeader>
@@ -280,6 +303,52 @@ const Account = ({ userEmail }) => {
                         >
                             Logout
                         </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Delete Account Dialogue */}
+            <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
+                <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-neutral-300">Confirm Account Deletion</AlertDialogTitle>
+                        <AlertDialogDescription className="text-neutral-400">
+                            Are you sure you want to delete of your account? This will delete all your journal entries and account data. If you have an existing subscription, you will lose it.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
+                            onClick={() => setShowDeleteAccountDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-900 hover:bg-red-800 text-neutral-300 border border-red-80"
+                            onClick={handleDeleteAccount}
+                        >
+                            Delete Account
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+             {/* Delete Account Error Dialogue */}
+             <AlertDialog open={showDeleteAccountErrorDialog} onOpenChange={setShowDeleteAccountErrorDialog}>
+                <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-neutral-300">Error</AlertDialogTitle>
+                        <AlertDialogDescription className="text-neutral-400">
+                            There was an error deleting your account. Please try again.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
+                            onClick={() => setShowDeleteAccountErrorDialog(false)}
+                        >
+                            Back
+                        </AlertDialogCancel>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
