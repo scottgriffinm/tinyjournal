@@ -232,7 +232,8 @@ const Account = ({ userEmail }) => {
                     </div>
                 </div>
             
-               <div className="space-y-6 pt-2">
+               <div className="space-y-6 pt-4">
+
                 <div className="">
                     <button
                         onClick={() => setShowLogoutDialog(true)}
