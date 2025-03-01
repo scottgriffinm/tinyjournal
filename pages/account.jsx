@@ -245,7 +245,7 @@ const Account = ({ userEmail }) => {
 
                 <div className="">
                     <button
-                        onClick={() => setShowLogoutDialog(true)}
+                        onClick={() => setShowDeleteAccountDialog(true)}
                         className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
                     >
                         <Eraser className="w-5 h-5" />
