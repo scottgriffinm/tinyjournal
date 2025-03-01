@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+
 function getStartOfMonthUTC(timestamp, monthOffset = 0) {
   // Convert the original timestamp to a “year, month” in UTC,
   // then reconstruct a date that is always the 1st at 00:00 UTC.

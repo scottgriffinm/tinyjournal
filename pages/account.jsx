@@ -236,18 +236,8 @@ const Account = ({ userEmail }) => {
                     </div>
                 </div>
             
+            
                <div className="space-y-6 pt-4">
-
-                <div className="">
-                    <button
-                        onClick={() => setShowLogoutDialog(true)}
-                        className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span>logout</span>
-                    </button>
-                </div>
-
                 <div className="">
                     <button
                         onClick={() => setShowDeleteAccountDialog(true)}
@@ -255,6 +245,15 @@ const Account = ({ userEmail }) => {
                     >
                         <Eraser className="w-5 h-5" />
                         <span>delete account</span>
+                    </button>
+                </div>
+                <div className="">
+                    <button
+                        onClick={() => setShowLogoutDialog(true)}
+                        className="w-full bg-neutral-800/50 p-4 rounded-lg flex items-center justify-center space-x-2 hover:bg-neutral-800 transition-colors border border-neutral-700"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span>logout</span>
                     </button>
                 </div>
                 </div>
