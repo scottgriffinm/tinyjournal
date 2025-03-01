@@ -80,7 +80,7 @@ const Home = () => {
             >
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-neutral-500">{entry.formattedDate}</span>
-                <span className="text-neutral-300">{entry.shortSummary}</span>
+                <span className="text-neutral-300">{entry.shortSummary.slice(0, 42).replace(/[\s.]$/, '')}...</span>
               </div>
             </div>
           ))}
