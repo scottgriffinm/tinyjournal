@@ -87,7 +87,7 @@ export default async function handler(req, res) {
          ORDER BY dateTime ASC`,
         [token.email]
       );
-
+      console.log("chartEntries:")
       console.log(chartEntries);
 
       emotionData = chartEntries.map((row) => {
@@ -113,6 +113,12 @@ export default async function handler(req, res) {
         };
       });
     }
+
+    console.log("emotionData:")
+    console.log(emotionData);
+
+    console.log("entryHistoryData:")
+    console.log(entryHistoryData);
 
     return res.status(200).json({
       aiResponse: aiText,

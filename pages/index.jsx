@@ -57,7 +57,7 @@ const Home = () => {
 
   return (
     <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
-      <div className="max-w-md mx-auto space-y-6">
+      <div className="max-w-xl mx-auto space-y-6">
         {/* Header */}
         <h1 className="text-2xl mb-10 mt-8">
          tiny journal
