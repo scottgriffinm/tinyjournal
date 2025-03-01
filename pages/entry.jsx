@@ -55,7 +55,7 @@ const EntryView = () => {
 
   return (
     <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Header with back button and date */}
         <div className="flex justify-between items-center mb-8">
           <ArrowLeft

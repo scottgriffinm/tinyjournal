@@ -23,6 +23,7 @@ const Account = ({ userEmail }) => {
     const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
+    const [showConfirmDeleteAccountDialog, setShowConfirmDeleteAccountDialog] = useState(false);
     const [showDeleteAccountErrorDialog, setShowDeleteAccountErrorDialog] = useState(false);
     const [subscription, setSubscription] = useState({
         tier: "free",
@@ -143,12 +144,15 @@ const Account = ({ userEmail }) => {
         signOut({ callbackUrl: "/login" });
     };
 
-    const handleDeleteAccount = async () => {
+    const handleTryToDeleteAccount = async () => {
         setShowDeleteAccountDialog(false);
-        setShowDeleteAccountErrorDialog(true);
+        setShowConfirmDeleteAccountDialog(true);
     };
 
-
+    const handleDeleteAccount = async () => {
+        setShowConfirmDeleteAccountDialog(false);
+        setShowDeleteAccountErrorDialog(true);
+    };
 
     return (
         <div className="bg-neutral-900 min-h-screen text-neutral-300 font-mono p-6">
@@ -326,9 +330,35 @@ const Account = ({ userEmail }) => {
                         </AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-red-900 hover:bg-red-800 text-neutral-300 border border-red-80"
-                            onClick={handleDeleteAccount}
+                            onClick={handleTryToDeleteAccount}
                         >
                             Delete Account
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Delete Account Confirmation Dialogue */}
+            <AlertDialog open={showConfirmDeleteAccountDialog} onOpenChange={setShowConfirmDeleteAccountDialog}>
+                <AlertDialogContent className="bg-neutral-800 text-neutral-300 border border-neutral-700 w-[90%] max-w-sm sm:max-w-md rounded-lg">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-neutral-300">Confirm Account Deletion (are you sure?)</AlertDialogTitle>
+                        <AlertDialogDescription className="text-neutral-400">
+                            Are you really sure you want to delete of your account? This is permanent. This will delete all your journal entries and account data. If you have an existing subscription, you will lose it.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
+                            onClick={() => setShowConfirmDeleteAccountDialog(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-900 hover:bg-red-800 text-neutral-300 border border-red-80"
+                            onClick={handleDeleteAccount}
+                        >
+                            Really Delete Account
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
