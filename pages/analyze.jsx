@@ -284,7 +284,7 @@ const Analyze = () => {
 
       {/* Scrollable Messages Container */}
       <div
-        className="flex-1 overflow-y-auto p-4 space-y-4"
+        className="flex-1 overflow-y-auto p-4 pt-14 space-y-4"
         style={{ overscrollBehavior: 'contain' }}
       >
         {/* If no messages yet, show suggestions */}
