@@ -201,7 +201,7 @@ export default async function handler(req, res) {
     };
 
     // Generate short summary
-    const shortSummary = text.slice(0, 28) + "...";
+    const shortSummary = text.replace(/\r?\n/g, ' ').slice(0, 50) + "...";
 
     // Get emotion values from 0-1 for happiness, connection, and productivity
     const emotionValuesPrompt = `Return just a json dict ( no other text ) of general emotions detected in the following personal journal entry.
