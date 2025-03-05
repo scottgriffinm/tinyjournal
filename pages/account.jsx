@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, ArrowLeft, ArrowRight, CheckCircle2, LogOut, UserRound, Eraser } from 'lucide-react';
 import { requireAuth } from "../lib/auth";
+import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { signOut } from "next-auth/react";
 import {

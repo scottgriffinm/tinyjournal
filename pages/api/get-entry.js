@@ -10,9 +10,15 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.email) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    // Validate user session
+    let token;
+    if (process.env.TEST_MODE) { // test mode: spoof token
+      token = {email: process.env.TEST_EMAIL};
+    } else { 
+      token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+      if (!token || !token.email) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
     }
 
     const [entry] = await pool.query(

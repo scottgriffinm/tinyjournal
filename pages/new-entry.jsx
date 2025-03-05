@@ -177,6 +177,7 @@ const NewEntry = () => {
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
+            data-testid="save-dialog-save-button"
               className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
               onClick={handleSave}
             >
@@ -197,6 +198,7 @@ const NewEntry = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
+            data-testid="error-dialog-close-button"
               className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
               onClick={() => setShowErrorDialog(false)}
             >
@@ -224,6 +226,7 @@ const NewEntry = () => {
             {/* Close Button */}
             <span
               onClick={() => router.push("/")}
+              data-testid="analysis-panel-close-button"
               className="absolute top-5 right-10 text-neutral-400 text-3xl cursor-pointer hover:text-neutral-200"
               title="Close"
             >

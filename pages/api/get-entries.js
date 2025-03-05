@@ -8,17 +8,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    // Validate user session
+    let token;
+    if (process.env.TEST_MODE) { // test mode: spoof token
+       token = {email: process.env.TEST_EMAIL};
+    } else { 
+       token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.email) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+  } 
 
     const [entries] = await pool.query(
       'SELECT id, DATE_FORMAT(dateTime, "%m/%d/%y") as formattedDate, shortSummary FROM entries WHERE email = ? ORDER BY dateTime DESC',
       [token.email]
     );
-
-    console.log(entries);
 
     res.status(200).json({ entries });
   } catch (error) {

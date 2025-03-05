@@ -66,7 +66,7 @@ const EntryView = () => {
         </div>
 
         {/* Journal entry text */}
-        <div className="whitespace-pre-wrap leading-relaxed text-neutral-300 mb-8">
+        <div data-testid="journal-entry-text" className="whitespace-pre-wrap leading-relaxed text-neutral-300 mb-8">
           {entry.text}
         </div>
 
@@ -94,6 +94,5 @@ const EntryView = () => {
 export async function getServerSideProps(context) {
   return requireAuth(context);
 }
-
 
 export default EntryView;

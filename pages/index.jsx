@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { requireAuth } from "../lib/auth";
+import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "journalEntries";
@@ -46,8 +47,9 @@ const Home = () => {
     fetchSession();
   }, []);
 
-  const MenuItem = ({ label, path }) => (
+  const MenuItem = ({ label, path, ...props }) => (
     <div
+      {...props}
       onClick={() => router.push(path)}
       className="bg-neutral-800/50 p-4 rounded-lg flex items-center space-x-2 cursor-pointer hover:bg-neutral-800 transition-colors border border-neutral-700"
     >
@@ -65,9 +67,9 @@ const Home = () => {
 
         {/* Menu Items */}
         <div className="space-y-4">
-          <MenuItem label="new entry" path="/new-entry" />
-          <MenuItem label="analyze" path="/analyze" />
-          <MenuItem label="settings" path="/account" />
+          <MenuItem data-testid="new-entry" label="new entry" path="/new-entry" />
+          <MenuItem data-testid="analyze" label="analyze" path="/analyze" />
+          <MenuItem data-testid="settings" label="settings" path="/account" />
         </div>
 
         {/* Feed Items */}
@@ -75,7 +77,7 @@ const Home = () => {
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="bg-neutral-800/30 p-3 rounded-lg flex justify-between items-center cursor-pointer hover:bg-neutral-800/50 transition-colors border border-neutral-700"
+              className="feed-item bg-neutral-800/30 p-3 rounded-lg flex justify-between items-center cursor-pointer hover:bg-neutral-800/50 transition-colors border border-neutral-700"
               onClick={() => router.push(`/entry?id=${entry.id}`)}
             >
               <div className="flex items-center space-x-4">
