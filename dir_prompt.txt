@@ -132,6 +132,7 @@ export function updateCache(key, newItem, ttlMs = 5 * 60 * 1000) {
 pages/new-entry.jsx:
 
 import React, { useState } from 'react';
+import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { Trash2, Save, ArrowUp } from 'lucide-react';
 import {
@@ -247,6 +248,7 @@ const NewEntry = () => {
           <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
         <button
+        data-testid="save-button"
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
@@ -416,9 +418,12 @@ const NewEntry = () => {
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {
-  const { getSession } = await import('next-auth/react');
-  const session = await getSession(context);
+  if (process.env.TEST_MODE===true) {
+    console.log(`Test mode is ${process.env.TEST_MODE} (should be true here): not redirecting to login`);
+    return { props: {} }; // Skip auth in test mode
+  }
 
+  const session = await getSession(context);
   if (!session) {
     return {
       redirect: {
@@ -740,10 +745,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    // check user session token
+    let token;
+    if (process.env.TEST_MODE) { // test mode: spoof token
+       token = {email: process.env.TEST_EMAIL};
+    } else { 
+     token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.email) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+  }
 
     const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
     const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });

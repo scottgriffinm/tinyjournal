@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getSession } from "next-auth/react";
+import { requireAuth } from "../lib/auth";
 import { useRouter } from "next/router";
 import { Trash2, Save, ArrowUp } from 'lucide-react';
 import {
@@ -115,6 +115,7 @@ const NewEntry = () => {
           <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
         <button
+        data-testid="save-button"
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
@@ -284,20 +285,7 @@ const NewEntry = () => {
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+  return requireAuth(context);
 }
 
 export default NewEntry;

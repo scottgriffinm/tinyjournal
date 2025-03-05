@@ -185,10 +185,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    // check user session token
+    let token;
+    if (process.env.TEST_MODE) { // test mode: spoof token
+       token = {email: process.env.TEST_EMAIL};
+    } else { 
+     token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.email) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+  }
 
     const gemini = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
     const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });

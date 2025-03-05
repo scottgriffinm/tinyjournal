@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getSession } from "next-auth/react";
+import { requireAuth } from "../lib/auth";
 import { useRouter } from "next/router";
 import { getCache, setCache } from "../lib/localStorageCache";
 const CACHE_KEY = "journalEntries";
@@ -92,20 +92,8 @@ const Home = () => {
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {
-  const session = await getSession(context);
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {}, // Add any props you need for the page
-  };
+  return requireAuth(context);
 }
+
 
 export default Home;
