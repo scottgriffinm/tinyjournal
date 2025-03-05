@@ -8,10 +8,12 @@ test.describe('Journal Entry Creation', () => {
     // Click on new entry button
     console.log('Clicking on new entry button...');
     await page.getByTestId('new-entry').click();
-
+    console.log("✅ New entry button clicked.");
+    
     // Type the journal entry
     console.log('Typing the journal entry...');
     await page.locator('textarea').fill(TEST_ENTRY_TEXT);
+    console.log("✅ Journal entry typed.");
 
     // Try up to three times to save the entry
     console.log('Trying up to three times to save the entry...');
@@ -31,7 +33,7 @@ test.describe('Journal Entry Creation', () => {
           // Check for close button
           const analysisPanelCloseButton = page.locator('[data-testid="analysis-panel-close-button"]');
           if (await analysisPanelCloseButton.count() > 0) {
-            console.log("✅ Analysis panel close button found!");
+            console.log("✅ Analysis panel close button found.");
             result = "Success";
             break; // Exit loop
           }
@@ -52,18 +54,20 @@ test.describe('Journal Entry Creation', () => {
         }
     }
 
-    // Check if entry saved   
+    // Check if entry saved  
     expect(found).toBeTruthy(); 
+    console.log("✅ Entry successfully saved.");
 
     // Click close
+    console.log("Clicking close button...");
     await page.getByTestId('analysis-panel-close-button').click();
+    console.log("✅ Close button clicked.");
     await page.waitForTimeout(3000); // wait
 
     // Check for entry in entry list
+    console.log("Checking if entry in home page entry list...");
     const searchText = TEST_ENTRY_TEXT.slice(0, 15);
     const feedItems = await page.locator('.feed-item').all();
-
-    // Check for a feed item that matches the first 15 characters of the test entry
     found = false;
     for (const feedItem of feedItems) {
         const itemText = await feedItem.innerText(); // Get the text content of the feed item
@@ -75,14 +79,39 @@ test.describe('Journal Entry Creation', () => {
     }
     // check if entry is present in feed
     expect(found).toBeTruthy();
+    console.log("✅ Entry found in entry list on home page.");
 
     // Ensure we navigated to an entry page
+    console.log("Ensuring we navigated to an entry page...");
     await expect(page).toHaveURL(/\/entry\?id=/);
+    console.log("✅ Navigated to entry page.");
 
     // Validate entry text
+    console.log("Validating entry text...");
     const journalEntryElement = await page.getByTestId('journal-entry-text');
     const actualText = await journalEntryElement.innerText();
-    expect(actualText.toBe(TEST_ENTRY_TEXT));
+    expect(actualText).toBe(TEST_ENTRY_TEXT);
+    console.log("✅ Entry text validated.");
+  });
+
+  test.afterEach(async ({ request }) => {
+    console.log("🔄 Cleaning up test entry...");
+    const response = await request.delete('http://localhost:3000/api/delete-entry', {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        text: TEST_ENTRY_TEXT,
+      },
+    });
+  
+    const responseBody = await response.json();
+    
+    if (response.ok) {
+      console.log("✅ Test entry successfully deleted.");
+    } else {
+      console.error("❌ Failed to delete test entry:", responseBody.error);
+    }
   });
 
 });
