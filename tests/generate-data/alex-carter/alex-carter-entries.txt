@@ -1,0 +1,725 @@
+Woke up at 10 AM today, which is later than I planned but not surprising. My goal was to get some work done on the side project, but instead, I spent an hour scrolling Reddit and then another hour watching a guy restore an old Game Boy. No regrets.
+
+Eventually made it to the coffee shop and actually did some coding. The UI is still a mess, but at least the backend is shaping up. Every time I try to make the frontend look decent, I remember that I’m not a designer and just make everything grayscale. Functional is better than pretty, right?
+
+Also, the barista remembered my order today, which was nice but also made me realize I come here too often.
+
+
+
+---
+
+Work was fine. Got through some annoying bug fixes. There was one issue where a function was returning None when it absolutely should not have been. Spent two hours debugging it only to realize I had a typo in the variable name. Classic.
+
+Lunch was leftover pasta, which was kind of dry, but adding more cheese fixed it. I should cook more. Or at least buy better frozen meals.
+
+Went to the gym after work. Well, technically, I drove to the gym. Sat in the parking lot for ten minutes and then decided I didn’t feel like lifting weights today. Came home and did some push-ups to make myself feel better about it.
+
+---
+
+End of the week. Survived another round of pointless meetings. There was a moment today where I caught myself nodding along while having no idea what was being said. Slack messages were flying in, Jira was open, and I was somehow supposed to be listening to a Zoom call at the same time. I really should get better at context-switching.
+
+On the bright side, I finally finished a book! Been chipping away at The Three-Body Problem for months. Good book, but my brain can only process so much theoretical physics after a full workday. Thinking about starting something lighter next—maybe a detective novel or something that doesn’t require me to Google concepts after every chapter.
+
+That’s about it. Gonna watch an episode of The Expanse and call it a night.
+
+
+---
+
+Mondays are always weird. They feel like a reset button I didn’t ask for.
+
+Work was okay. Deployed a small update and, miraculously, nothing broke. Either I did a great job or the bugs are just waiting to surface at the worst possible time. We’ll see.
+
+Also, why do meetings always pile up on Mondays? I had four today, and at least two could have been emails. There’s something soul-crushing about sitting in a video call while someone explains a document they could have just sent out. I started keeping a Notion doc open so it looks like I’m taking notes when I’m actually writing grocery lists.
+
+Speaking of groceries, I need to buy more actual food. Right now, my fridge consists of coffee creamer, some questionable spinach, and a pack of tortillas.
+
+
+---
+
+Tried to wake up early and be one of those “5 AM productive people.” Set my alarm for 6:30, snoozed it five times, and woke up at 8:15. So much for that.
+
+Work was mostly debugging today. One of the junior devs accidentally pushed a commit that deleted half of our styles. No big deal, just revert it, right? Nope. Somehow, the Git history got messed up, and we spent an hour figuring out what went wrong. I don’t miss being new at this.
+
+After work, I actually made a real dinner—grilled chicken with rice and vegetables. Felt like a responsible adult for about 20 minutes, then undid all of that by eating half a sleeve of Oreos. Balance.
+
+
+---
+
+Finally made it to the gym. Actually went inside this time instead of sitting in the parking lot. Didn’t do anything crazy—just some lifting and a bit of running—but it felt good to move. I always forget how much better I feel after working out, then immediately go back to avoiding it for two weeks.
+
+Spent the rest of the day messing around with my side project. Decided to switch the database structure again because I keep overengineering things. Sometimes I think I like refactoring more than actually finishing projects.
+
+Also, my cat has decided that my keyboard is the best place to sit when I’m trying to code. I respect the power move but also need to find a solution before he deploys a random commit.
+
+
+---
+
+Got a message from my manager this morning that started with, “Hey, quick question…” which is always a bad sign. Turned out to be about a bug in a feature we launched last month. Apparently, users have been running into an issue, but no one reported it until now. Love that.
+
+Fixed it after some digging. It was one of those problems where the fix was just one line of code, but finding that one line took three hours.
+
+Thought about meal prepping for the week, then realized I don’t actually know what I’d make. Do people really eat the same thing for five days straight? Ended up ordering sushi instead.
+
+
+---
+
+Got roped into a “fun” team-building event. It was a virtual escape room, which, to be fair, was better than some of the other things we’ve done. But there’s something about forced socialization that drains me. Just let me write my code in peace.
+
+At least the week is almost over. One more day, and then I get to spend the weekend pretending I have no responsibilities. Might finally clean my apartment. Or, more realistically, I’ll say I’m going to clean and then find something else to do instead.
+
+We’ll see.
+
+
+---
+
+Lazy Sunday. Woke up at 11, made coffee, and then just sat on the couch for an hour doing nothing. Sometimes that’s exactly what I need.
+
+Eventually convinced myself to be productive. Cleaned the kitchen, which mostly meant throwing out expired stuff and wiping down the counters. Found an old takeout container in the fridge that I’m pretty sure had turned into a science experiment. Tossed it without opening it—some things are better left unknown.
+
+Did some coding in the evening, but mostly just tinkering. I really should focus on finishing the side project instead of rewriting the same three functions over and over.
+
+
+---
+
+One of those days where nothing really happened, but it still felt long.
+
+Morning stand-up was the usual mix of “everything is on track” (even when it’s not) and “we’ll circle back on that” (which means we won’t). I zoned out halfway through and spent most of the meeting trying to figure out if I had enough coffee left to make it through the day.
+
+Ended up working late, but not because I had to—just got into a flow state fixing an annoying bug. There’s something oddly satisfying about finally cracking a problem that’s been bugging me for days. Felt like I earned my dinner. (Frozen pizza. Still counts.)
+
+
+---
+
+Long week. Not bad, just… long.
+
+There was some drama in the dev Slack channel today because someone pushed directly to main. Chaos. Reactions ranged from “No big deal, we can revert” to full-blown panic about how this means our process is broken. I just muted the channel and let other people argue about it.
+
+Finished work and decided to actually go outside for once. Walked to the bookstore down the street, mostly to browse. Ended up buying a novel I probably won’t read for months, but I like having books around. Makes me feel like a person who reads, even when I don’t.
+
+
+---
+
+Did meal prep for the week! Well… sort of. I made a big batch of pasta and divided it into containers, so I guess that counts. Future me will be grateful.
+
+Also, tried to fix the wobbly chair at my desk. Tightened some screws, but it still leans slightly to one side. I could just buy a new chair, but that would require decision-making, and I’m not mentally prepared for that.
+
+Side project is… progressing? Slowly? Every time I think I’m close to finishing, I think of another thing I should add. At this rate, it’ll never actually launch.
+
+
+---
+
+April already? How?
+
+Had a weirdly productive workday. Knocked out a bunch of tickets, even the ones I’d been avoiding. It’s funny how I’ll put off something for a week, then when I finally do it, it only takes 20 minutes.
+
+After work, I watched some random YouTube videos and somehow ended up deep into a rabbit hole about medieval weaponry. No idea how I got there, but now I know way too much about 14th-century longswords.
+
+Thinking about taking a day off soon. Not for anything specific, just because I can. A “pretend I don’t exist” kind of day sounds nice.
+
+
+---
+
+
+Got a call from Mom this morning. Grandpa passed away last night.
+
+I wasn’t really expecting it, but I guess I should have been. He was 86, and his health had been getting worse. But still, I thought there’d be more time. That’s always how it feels, right? Like there’s more time until suddenly there isn’t.
+
+I don’t really know what to do with myself. I just kind of sat on the couch after the call, staring at nothing for a while. Work feels irrelevant. The side project feels irrelevant. Even basic things like making food feel like too much effort. I just ordered something and barely ate it.
+
+The funeral’s next week. I should probably book a flight soon.
+
+
+---
+
+Went to work today, but I don’t think I actually worked. Just kind of went through the motions, answering emails and pretending to be engaged in meetings. Everyone at work is just living their normal lives, and it’s weird that mine feels like it’s paused while theirs keeps going.
+
+I told my manager I’d be taking some time off for the funeral. He was understanding. Said to take whatever time I needed, but I don’t even know how much time that is. How long does it take to feel okay again?
+
+I keep remembering little things about Grandpa. The way he always had butterscotch candies in his pocket. The stories he told about working as a mechanic back in the day. The way he always said “See ya later” instead of goodbye, like it was a promise.
+
+I don’t know. Just feeling kind of empty.
+
+
+---
+
+
+I flew in today. Haven’t been back home in a while. Everything looks the same but feels different. Maybe it’s me that’s different.
+
+Mom’s handling everything, but I can tell she’s exhausted. I tried to help where I could—mostly just small things, like picking people up from the airport or helping set up chairs at the funeral home. None of it feels like enough.
+
+I went to Grandpa’s house for a bit. It still smells like him—like old leather and coffee. I stood in his workshop for a long time, looking at all his tools, his half-finished projects. He was always fixing things. Wish he could’ve fixed time, too.
+
+
+---
+
+The funeral was today. It was… hard.
+
+A lot of people showed up. Grandpa had that kind of presence—everyone who met him seemed to like him. People shared stories, some funny, some bittersweet. I thought I’d be able to hold it together, but when Mom started crying, I lost it.
+
+I didn’t say anything during the service. Just sat there, staring at the casket, trying to make sense of the fact that he was in there. That he’s gone.
+
+Afterward, we went back to the house, and it felt like he should be there. Sitting in his old recliner, making some offhanded joke about how we’re all fussing too much. But he wasn’t. And the house felt too quiet.
+
+I hate how grief makes everything feel so heavy.
+
+
+---
+
+Back home now. Back to work. Back to normal. Except, it doesn’t feel normal.
+
+I sat at my desk today, staring at my code, and I just… didn’t care. My brain kept drifting. Thinking about Grandpa. Thinking about time. Thinking about how fast life moves and how we’re all just trying to keep up.
+
+I don’t know what I’m supposed to do with these feelings. Work through them? Distract myself? Just let them sit?
+
+I’ll probably just keep going, because that’s what people do. But today, I just feel tired.
+
+
+---
+
+It’s been a week since the funeral. Feels like longer. Feels like no time at all.
+
+Work has been weird. I’m back in it, but I’m not in it. I’m doing what I need to, but I feel like I’m on autopilot. I keep rereading lines of code, realizing I wasn’t actually processing them. It’s like my brain is buffering.
+
+Had a 1-on-1 with my manager today. He asked how I was doing, and I gave the standard “I’m okay” response. He nodded like he knew it wasn’t true, but he didn’t push. I appreciated that.
+
+I don’t know, man. I just feel… disconnected.
+
+
+---
+
+Woke up this morning and didn’t want to get out of bed. Stared at the ceiling for way too long, just letting my mind wander.
+
+Eventually forced myself up, made coffee, and sat at my desk. Tried to write some code, but everything I did felt slow. Even simple things that should’ve been quick fixes took twice as long. My focus is just shot.
+
+I know it’ll pass. I know that. But knowing it doesn’t make it easier.
+
+
+---
+
+
+Got a package in the mail today from Mom. It was some of Grandpa’s stuff—just little things. A pocketknife he always carried, a couple of old photographs, and a notebook he used to jot things down in.
+
+Flipping through it, I found pages full of half-written lists and sketches of things he wanted to build. I never realized how much he wrote things down. Notes about car parts, reminders to call people, ideas for random projects.
+
+It made me miss him even more. But at the same time, it felt like a piece of him was still here.
+
+I put the notebook on my desk. Maybe I’ll start writing things down, too.
+
+
+---
+
+
+I went for a walk today. No music, no podcasts, just walked. It felt good to move, to breathe some fresh air.
+
+I ended up at a park I haven’t been to in years. Just sat on a bench for a while, watching people pass by. A dad was teaching his kid how to ride a bike. A couple walked by holding hands. Life just kept moving, like it always does.
+
+I sat there thinking about Grandpa. About how he lived a full life. About how, in the grand scheme of things, that’s all any of us are trying to do.
+
+I don’t have any big answers. But I think, for the first time in a while, I felt something close to peace.
+
+
+---
+
+Work was better today. Not great, but better.
+
+Actually got into a flow state for the first time in weeks. It was just a simple feature update, nothing groundbreaking, but it felt good to do something. To focus on something outside my own head for a bit.
+
+I think I’m coming back to myself. Slowly.
+
+Still miss Grandpa. I think I always will. But I’m starting to feel like I can carry that and still keep going. And maybe that’s the point.
+
+
+---
+
+It’s been a while since I’ve had a normal weekend, and I’m not even sure what that looks like anymore.
+
+I tried to treat today like a reset. Slept in a little, made a real breakfast (eggs and toast, nothing fancy), and cleaned my apartment. Cleaning felt good. Not because I enjoy it, but because I finally did something I’ve been putting off. It’s weird how a messy space makes my brain feel heavier.
+
+After that, I worked on the side project for a bit. Didn’t really accomplish much—just refactored some old code and played around with a new framework I’ll probably never use. But it was nice to tinker with something that didn’t have deadlines or expectations attached to it.
+
+I guess that’s progress.
+
+
+---
+
+
+Had one of those days where everything at work felt harder than it should’ve been. The code reviews were brutal—not in a mean way, just a why did I write it like that kind of way.
+
+I know I’m a decent developer. I know that. But some days, imposter syndrome sneaks in, and I feel like I’m just fooling everyone. Like one day, they’re going to realize I don’t actually know what I’m doing.
+
+It’s stupid. I’ve been doing this for years. But the feeling still creeps in sometimes.
+
+Maybe I just need to get more sleep.
+
+---
+
+I had a dream about Grandpa last night. We were sitting in his old workshop, just talking. It wasn’t about anything important—just the kind of small talk we used to have. He was showing me how to fix something, but I don’t remember what it was.
+
+I woke up and just lay there for a while, trying to hold onto the feeling. It was nice to see him again, even if it wasn’t real.
+
+I haven’t told anyone about the dream. Feels too personal, like saying it out loud would make it disappear.
+
+
+
+---
+
+
+Started journaling more consistently, and I think it’s helping.
+
+I’ve been using Grandpa’s old notebook for random thoughts—nothing structured, just things I want to remember. Sometimes it’s work stuff, sometimes it’s just a funny thing I saw on the internet. Feels nice to write things down instead of letting them float around in my head.
+
+Work was better today. Knocked out some lingering tickets, and even helped a junior dev debug something. I forget sometimes that I am good at this. That I’ve been doing this long enough to actually help people.
+
+Also, I cooked a real dinner. No frozen meals, no takeout. Chicken, rice, vegetables. Basic, but still. Progress.
+
+---
+
+I think I’m starting to feel okay again. Not all the way there, but closer.
+
+I caught myself laughing at something dumb today—just some random meme a coworker sent in Slack. A month ago, I don’t think I would’ve even reacted.
+
+It’s weird how grief works. How one day, it feels like you’re carrying a hundred-pound weight, and the next, it’s just… a little lighter. I still miss him. I think I always will. But I don’t feel stuck anymore.
+
+I think he’d want that.
+
+
+---
+
+I had a long call with Mom today. We don’t talk that often—maybe once every couple of weeks—but this time, we were on the phone for almost an hour.
+
+She’s been going through Grandpa’s stuff, figuring out what to keep and what to give away. She asked if I wanted anything else, but honestly, I already have what matters to me. His notebook is still on my desk, and that feels like enough.
+
+She told me she found an old voicemail from him on her phone, just a quick message reminding her about a doctor’s appointment. She said she’s been listening to it every now and then, just to hear his voice.
+
+I get it. I really do.
+
+
+---
+
+Today was surprisingly productive. It’s like my brain finally decided to work again. Fixed a nasty bug that had been haunting our backlog for weeks. It felt good—like a win I actually needed.
+
+I also went to the gym after work. Nothing crazy, just some light lifting and a short run. I don’t know why I always put off going when I know it makes me feel better. Maybe I just like making things harder for myself.
+
+Side note: I should really start stretching more. My back is basically 90 years old at this point.
+
+
+---
+
+Had plans to go out with some friends tonight, but I bailed at the last minute. I don’t even have a good excuse—just felt drained and didn’t want to be around people.
+
+I know I probably should’ve gone. Socializing is important or whatever. But the idea of small talk and crowded bars just felt exhausting.
+
+Instead, I stayed home, ordered sushi, and watched Blade Runner 2049 for the hundredth time. No regrets.
+
+
+---
+
+Work is picking up again. New project, new deadlines, same old stress. It’s not bad—just busy.
+
+I keep catching myself thinking about time lately. Maybe it’s because I’m coming up on 30, or maybe it’s just a leftover side effect of losing Grandpa. But I can’t shake this weird feeling that life is moving too fast, and I’m not doing enough with it.
+
+I don’t even know what “enough” means. Like, is writing code for some mid-sized tech company supposed to be my big contribution to the world? What am I actually building here?
+
+Anyway. Probably just overthinking things.
+
+
+---
+
+Had one of those “zoom out” moments today.
+
+I was walking home from the store, and I passed this little coffee shop I used to go to all the time when I first moved here. I hadn’t thought about it in years. But just seeing it brought back this weird flood of memories—sitting there with my laptop, struggling through my first dev job, wondering if I’d ever actually feel good at this.
+
+And now? I don’t think about that stuff as much. I still have doubts, sure, but they don’t consume me the way they used to. Maybe that’s what growth actually looks like—not some big, dramatic change, but just realizing one day that you’re not who you used to be.
+
+I don’t know. Just something to think about.
+
+
+---
+
+June already. How?
+
+I don’t feel ready for summer. Not that it really means anything when you work a desk job, but still. It makes me think about being a kid, when summer actually felt like a huge shift—when it meant freedom, long nights, and no responsibilities. Now it’s just hotter, and my AC bill goes up.
+
+Work was fine. I spent way too long trying to optimize a function that wasn’t even causing issues, just because it felt inefficient. Classic me. At least I caught myself before going too deep down the rabbit hole. Progress.
+
+
+---
+
+I ran into an old coworker today. Well, “ran into” might not be the right phrase—I saw them at the grocery store and deliberately didn’t say anything.
+
+It’s not that I didn’t like them. We got along fine. But I just wasn’t in the mood for the whole “Hey! How have you been? Where are you working now?” conversation. It feels so performative.
+
+Instead, I pretended to be deeply invested in comparing brands of peanut butter until they left the aisle.
+
+I know I probably should make more of an effort with people. But sometimes, I just don’t have the energy for it.
+
+
+---
+
+I think I need a new hobby.
+
+I was looking at my screen time today, and it’s… bad. Just hours and hours of scrolling, gaming, and coding. I don’t think I do anything real anymore. Like, what was the last thing I made with my hands that wasn’t digital?
+
+I thought about trying woodworking or something. Maybe something small, like making a shelf. Grandpa would’ve loved that. He could build anything. I still remember watching him fix things around the house, the way he just knew how stuff worked.
+
+I don’t expect to be good at it, but maybe that’s the point. Just trying something new, just for the sake of it.
+
+
+---
+
+
+Today was just a day. Nothing good, nothing bad—just one of those in-between days that come and go without leaving much of a mark.
+
+Meetings, code, lunch, more code. I feel like I spent half my day staring at a Jira ticket, trying to make sense of vague requirements.
+
+I did go for a walk after work, though. No destination, no music, just moving. It helped. I think I need to do that more often.
+
+---
+
+Friday the 13th. Nothing spooky happened, unless you count the fact that I actually answered a phone call instead of letting it go to voicemail.
+
+It was an old college friend. We haven’t talked in a while, but it was nice catching up. We made vague plans to meet up sometime, which means there’s a 50/50 chance it actually happens.
+
+I don’t know why I let friendships drift so easily. It’s not intentional—I just get caught up in routine, and suddenly months or years go by.
+
+Maybe I should text people more. Maybe I should stop overthinking it and just do it.
+
+
+---
+
+Started the day feeling fine, ended it feeling completely drained.
+
+Nothing even happened. Work was just a normal mix of debugging and meetings. But by the time I logged off, I felt like I had nothing left in me. Just sat on the couch staring at my phone for an hour, not even processing what I was looking at.
+
+I hate when days feel like this—like I spent all my energy on things that don’t matter and now I don’t have anything left for myself.
+
+Maybe I just need more sleep. Maybe I need something else entirely.
+
+
+---
+
+cleaning, maybe cooking something decent. Instead, I ordered a burger and played Stardew Valley for three hours.
+
+I don’t know why I feel guilty about it. It’s not like I had some urgent responsibility I ignored. But there’s always that little voice in the back of my head saying, you should be doing more. More what? I have no idea.
+
+I think I just need to be okay with doing nothing sometimes.
+
+
+---
+
+Went to a coffee shop to work on the side project. I figured a change of scenery might help. It did, for about 20 minutes, until I got distracted eavesdropping on the people at the next table.
+
+They were talking about some startup they’re trying to get off the ground. Full of buzzwords—scalability, disruption, synergizing verticals. I have no idea what their business actually is, but they sounded confident.
+
+Made me wonder—do I even want to do a startup someday? Part of me likes the idea of building something from scratch. But another part of me knows I don’t want to work 80-hour weeks just to “hustle.”
+
+For now, I think I’m fine just coding for fun. No pressure, no expectations. Just building things because I want to.
+
+
+---
+
+
+I found one of Grandpa’s old flannel shirts in the box Mom sent. I don’t know why I didn’t notice it before, but today I took it out and just held it for a while.
+
+It still smells like him. Faintly, like old wood and motor oil.
+
+I thought about wearing it, but it feels too much like his. I think I just want to keep it as it is. Maybe I’ll hang it somewhere in my apartment, just to have it around.
+
+It’s weird, the little things that bring someone back to you.
+
+---
+
+Had a weird moment at work today.
+
+I was refactoring some old code, and I suddenly thought, What if this is the last thing I ever work on? Not in a morbid way, just… what if this is my legacy? This one function, buried in some internal tool, quietly running in the background while people forget who wrote it?
+
+It made me realize—I don’t want to just be the guy who writes good, clean code. I want to do something more. I don’t know what that looks like yet, but I know I don’t want to look back in ten years and feel like I wasted my time.
+
+Maybe it’s time to start figuring that out.
+
+
+---
+
+I got laid off today.
+
+It wasn’t just me—about 20% of the company got cut. Classic “restructuring” email followed by a hastily scheduled meeting where HR gave us the standard “We appreciate all your contributions” speech. I barely heard it.
+
+It’s weird. I knew layoffs were a possibility, but I didn’t think I’d be one of them. I wasn’t the best developer on the team, but I was solid. Reliable. Thought that was enough. Guess not.
+
+I closed my laptop, sat on the couch, and just stared at the wall for a while. No idea what to do next.
+
+
+---
+
+I keep waking up at my usual time, then remembering I don’t have anywhere to be. It’s unsettling.
+
+I started updating my resume today, but even that felt overwhelming. How do you sum up years of work in a few bullet points? How do you make yourself stand out when hundreds of other people are applying for the same jobs?
+
+I ended up closing the document and watching YouTube for two hours instead. Not great.
+
+I need to snap out of this.
+
+
+---
+
+Got an email from a recruiter.
+
+Well, more like a mass email—one of those generic “We saw your profile and think you’d be a great fit!” messages. Normally, I’d ignore it, but now? I don’t have the luxury of ignoring anything.
+
+I replied. No idea if it’ll go anywhere, but at least it’s something.
+
+Also, I finally told my mom about the layoff. She was worried, of course, but she tried to be positive. Said maybe this is an opportunity. I know she means well, but I’m not really in the mood for silver linings yet.
+
+
+---
+
+Didn’t get the job.
+
+Got the rejection email this morning. “We appreciate your time and interest, but we’ve decided to move forward with another candidate.” I stared at that sentence for a long time.
+
+I know it’s normal. I know rejection happens. But that doesn’t make it suck any less.
+
+Took the rest of the day off from job applications. Just went for a long walk, no destination in mind. Ended up at the park, sat on a bench, and just existed for a while.
+
+Tomorrow, I’ll try again. But tonight, I just need to sit with this.
+
+
+---
+
+Got an interview request from a company I actually want to work for. That feels rare. Most of my applications have been scattershot—just throwing my resume out there and hoping something sticks. But this one? This one I actually care about.
+
+Now the anxiety kicks in. I know I can do the job, but can I convince them of that? Can I be charismatic enough, confident enough?
+
+I’ll prep tomorrow. Or I’ll tell myself I will, then panic the night before and cram. Either way, fingers crossed.
+
+
+---
+
+
+Interview went well. I think.
+
+It was one of those conversations where everything felt smooth—good back-and-forth, no awkward silences, even a few jokes. The technical portion was tough, but I didn’t completely bomb it. I think I made a good impression.
+
+Now, the waiting. Again.
+
+I don’t know why this job search feels so personal. It’s not like getting rejected means I’m a failure as a person, but it feels that way sometimes. I need to work on separating my self-worth from my work.
+
+Easier said than done.
+
+
+
+---
+
+
+I got the job.
+
+I almost didn’t pick up the call when they rang. I assumed it was another rejection, and I didn’t want to deal with it. But I answered. And I heard the words: We’d love to have you join our team.
+
+I said all the right things—Thank you! I’m excited! Can’t wait to get started!—but when I hung up, I just sat there, numb.
+
+It’s what I wanted. It’s good news. So why does it feel like I don’t know how to react? Maybe because I spent so long bracing for rejection that my brain doesn’t know what to do with an actual win.
+
+I’ll process it eventually. But for now, I guess I just breathe.
+
+
+---
+
+
+I start the new job tomorrow.
+
+I should be excited, and part of me is. But mostly, I just feel anxious. New people, new codebase, new expectations—it’s a lot. I don’t want to be the “new guy” who asks dumb questions. I know it’s normal, but I hate the feeling of not knowing what I’m doing.
+
+Spent most of the day trying to distract myself. Played some games, went for a walk, even attempted meal prep (which resulted in three identical chicken-and-rice containers that I’ll probably get sick of by Wednesday).
+
+I just need to get through the first week. Then maybe I’ll start to feel normal again.
+
+
+
+---
+
+I met someone.
+
+It’s been a while since I’ve even thought about dating, but tonight, something just clicked. I was at a friend’s birthday thing—one of those events where I didn’t really want to go but forced myself to anyway. And then I met her.
+
+Her name’s Emily. She’s funny in a way that feels effortless, like she’s not even trying but somehow always lands the perfect joke. We ended up talking for hours, long after most people left. No awkward pauses, no forced small talk—just easy conversation.
+
+I don’t know where this will go, but I haven’t felt this kind of spark in a long time.
+
+
+
+---
+
+
+I texted her. She texted back. We’re getting dinner on Friday.
+
+I forgot how nerve-wracking this part is—the waiting, the overanalyzing, the little rush when you see a reply. I don’t want to get ahead of myself, but I’d be lying if I said I wasn’t excited.
+
+Work felt secondary today. My brain kept drifting. I probably rewrote the same function three times before realizing I didn’t actually need to change anything.
+
+Maybe this is what hope feels like.
+
+---
+
+The date went really well.
+
+We got dinner at this little Italian place, one of those cozy, dimly lit spots that makes everything feel more important. Conversation flowed the same way it did the first time we talked—natural, unforced.
+
+After dinner, we just walked. No destination, just moving. It felt like a scene from a movie, one of those moments you want to freeze in time.
+
+She texted me when she got home: Tonight was really fun. Let’s do it again soon?
+
+I stared at that message for way too long, smiling like an idiot.
+
+
+---
+
+I can’t stop thinking about her.
+
+We’ve been texting nonstop, sending each other dumb memes, talking about everything and nothing. It’s been a long time since I’ve felt this pulled toward someone.
+
+I told Matt about her today. He immediately started grilling me for details, joking that I finally have something interesting going on in my life. He’s not wrong.
+
+I don’t want to overthink this. I just want to enjoy it.
+
+
+---
+
+
+She kissed me tonight.
+
+We were saying goodbye after another date—this time at a bookstore, because she’s the kind of person who loves wandering through shelves and getting lost in pages. I walked her to her door, and before I could even think about it, she leaned in and kissed me.
+
+It was soft, simple, perfect.
+
+And now I’m lying in bed, replaying it in my head like an idiot.
+
+I think this might actually be something real.
+
+---
+
+Everything about this feels different.
+
+I’ve dated before. I’ve had relationships. But this? This is something else.
+
+Emily and I went out again tonight—just a casual dinner, nothing fancy. But at one point, I looked at her mid-conversation, and this weird, overwhelming feeling hit me. Like, Oh. This is real. This is someone I actually want to build a life with.
+
+It’s too soon to be thinking that, right? Probably. But I can’t ignore the feeling.
+
+
+---
+
+She met my friends tonight.
+
+I was a little nervous—not that I thought they wouldn’t like her, but because introducing someone new always feels like a big step. Like I’m merging two parts of my life.
+
+But of course, she was amazing. She fit in like she had always been part of the group. By the end of the night, Matt was already making inside jokes with her.
+
+It feels good. It feels right.
+
+
+---
+
+I woke up to a good morning text from her, and it’s embarrassing how much it made my day.
+
+Work was the usual mix of debugging and meetings, but I caught myself smiling like an idiot more times than I’d like to admit. I don’t know how long the honeymoon phase is supposed to last, but I hope this feeling sticks around.
+
+Also, she made me a playlist. Just sent it out of nowhere, saying, These songs remind me of you. I’ve been listening to it on repeat all day.
+
+I think I’m in trouble.
+
+
+---
+
+
+She invited me over for the first time tonight.
+
+Her place is small but cozy, full of little things that are so her—plants in every corner, books stacked in places they probably shouldn’t be, a record player that she actually uses instead of just keeping for aesthetic.
+
+We made dinner together. Nothing fancy, just pasta. But it was one of those moments that felt weirdly important, like a tiny glimpse of what a future together might look like.
+
+I’m falling for her. Fast.
+
+---
+
+She told me she loves me.
+
+I wasn’t expecting it—not yet. We were just sitting on her couch, half-watching some old movie, when she turned to me and said it. Just like that. No buildup, no big moment. Just the truth.
+
+And the best part? I didn’t even have to think about my response. It just came out naturally.
+
+“I love you too.”
+
+And I do. God, I do.
+
+
+---
+
+
+Everything feels different now, but in the best possible way.
+
+Saying “I love you” unlocked something. It’s like we were already close, but now there’s no hesitation, no second-guessing. Just us.
+
+We spent the evening at her place, cooking together again. I accidentally burned the garlic bread, and she made fun of me for it, but then she kissed me, so I think I won that round.
+
+I don’t know how I got so lucky with her, but I’m not going to question it.
+
+
+---
+
+Met her parents today.
+
+I was terrified, even though she swore they’d love me. And, thankfully, she was right. Her mom gave me a hug the second we walked in, and her dad—who I was most nervous about—shook my hand and immediately started telling me a ridiculous story about the time he accidentally set his grill on fire.
+
+Dinner was great. It felt… natural. Like I wasn’t just meeting them but joining something.
+
+On the drive home, she squeezed my hand and whispered, They loved you. I don’t think I’ve ever smiled so hard.
+
+
+---
+
+We’re spending Thanksgiving together.
+
+She asked me a few days ago, kind of cautiously, like she wasn’t sure if it was too soon. But the second she asked, I knew I wanted to.
+
+It’s been a long time since I’ve actually looked forward to a holiday. The past few years, Thanksgiving has just felt like another day, something to get through rather than enjoy. But this year? It feels like something real.
+
+I don’t care what we do. I just care that I get to do it with her.
+
+
+---
+
+Yesterday was perfect.
+
+We cooked together (this time, I didn’t burn anything). We ate way too much. We sat on her couch afterward, full and happy, just listening to music.
+
+At one point, I caught myself looking at her and thinking, This. This is home. Not the apartment, not the food, not the plans—just her.
+
+I didn’t say it out loud, but I think she knew. She looked at me, smiled in that way she does, and rested her head on my shoulder.
+
+I think I could spend a lifetime with her.
+
+
+
+---
+
+New month. New thoughts.
+
+We were talking about the future last night—not in a big, dramatic way, just casually. Trips we want to take. Places we want to live. She mentioned, almost offhandedly, that she could see us getting a place together someday.
+
+And instead of panicking, I felt excited.
+
+I never thought I’d be the kind of person who wants that. Who looks at another person and thinks, Yeah, I could build a life with you. But here I am.
+
+I don’t know when, I don’t know how soon, but I do know this—wherever we go next, I want it to be with her.
+
+
+---
+
+I can’t stop thinking about what she said. About getting a place together.
+
+It wasn’t a big conversation, just a passing thought, but now it’s lodged in my brain. I catch myself imagining what that would look like—what it would feel like. Waking up next to her every morning. Cooking together in our own kitchen. Not saying goodbye at the door because home is the same place for both of us.
+
+It doesn’t feel scary. It feels… right.
+
+I don’t know if I’m supposed to bring it up again, or if I should wait for her to. But either way, I think it’s coming.
+
