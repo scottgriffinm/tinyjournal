@@ -45,18 +45,22 @@ function generateMonthTicksUTC(start, end) {
 }
 
 /**
- * Formats a UTC timestamp into a short month-year string (e.g., "jan 25").
+ * Formats a UTC timestamp into a short month-year string (e.g., "1/25", "10/25").
  * 
  * @param {number} timestamp - The UTC timestamp to format.
- * @returns {string} - A formatted string representing the month and two-digit year.
+ * @returns {string} - A formatted string representing the two-digit month and year.
  */
 function formatXAxisUTC(timestamp) {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
+  var date = new Date(timestamp);
+  date = date.toLocaleDateString(undefined, {
+    month: '2-digit',
     year: '2-digit',
     timeZone: 'UTC'
   }).toLowerCase();
+  if (date[0] === "0") {
+    date = date.slice(1);
+  }
+  return date
 }
 
 /**
@@ -75,7 +79,6 @@ function formatXAxisUTC(timestamp) {
  */
 function getAveragedDataByDate(data) {
   const dailyTotals = {};
-
   data.forEach((entry) => {
     const { date, happiness, connection, productivity } = entry;
     if (!dailyTotals[date]) {

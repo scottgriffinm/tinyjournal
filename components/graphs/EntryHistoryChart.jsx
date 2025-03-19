@@ -8,7 +8,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-
 function getStartOfMonthUTC(timestamp, monthOffset = 0) {
   // Convert the original timestamp to a “year, month” in UTC,
   // then reconstruct a date that is always the 1st at 00:00 UTC.
@@ -33,15 +32,23 @@ function generateMonthTicksUTC(start, end) {
   return ticks;
 }
 
+/**
+ * Formats a UTC timestamp into a short month-year string (e.g., "1/25", "10/25").
+ * 
+ * @param {number} timestamp - The UTC timestamp to format.
+ * @returns {string} - A formatted string representing the two-digit month and year.
+ */
 function formatXAxisUTC(timestamp) {
-  // Format using UTC so we never slip into the previous/next day
-  const date = new Date(timestamp);
-  // Example: “dec 24” or “jan 25”
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
+  var date = new Date(timestamp);
+  date = date.toLocaleDateString(undefined, {
+    month: '2-digit',
     year: '2-digit',
     timeZone: 'UTC'
   }).toLowerCase();
+  if (date[0] === "0") {
+    date = date.slice(1);
+  }
+  return date
 }
 
 const EntryHistoryChart = ({ data }) => {

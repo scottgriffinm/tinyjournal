@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 function getRandomTimeAround10PM() {
-    const meanHour = 22; // 10 PM
-    const stdDev = 1.5;  // Standard deviation of 1.5 hours
+    const meanHour = 21; // 9 PM
+    const stdDev = 2;  // Standard deviation of 2 hours
 
     // Box-Muller transform for normal distribution
     function randomNormal(mean, stdDev) {
@@ -48,8 +48,8 @@ test.describe('Adjust Data', () => {
 
       console.log(`Updating ID ${rows[i].id}: New DateTime → ${newDateTime}`);
 
-      // Move back 1-5 days for the next entry
-      currentDate.setUTCDate(currentDate.getUTCDate() - (Math.floor(Math.random() * 5) + 1));
+      // Move back 1-10 days for the next entry
+      currentDate.setUTCDate(currentDate.getUTCDate() - (Math.floor(Math.random() * 3) + 1));
     }
 
     // Execute updates in the database
