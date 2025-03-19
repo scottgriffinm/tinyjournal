@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -140,22 +140,57 @@ const EntryEmotionGraph = ({ data }) => {
   // Format Y-axis values
   const formatYAxis = (value) => value.toFixed(1);
 
+  // State variables to track visibility
+  const [showHappiness, setShowHappiness] = useState(true);
+  const [showConnection, setShowConnection] = useState(true);
+  const [showProductivity, setShowProductivity] = useState(true);
+  // Toggle lines when labels are clicked
+  const handleToggleHappiness = () => {
+    setShowHappiness((prev) => !prev);
+  };
+  const handleToggleConnection = () => {
+    setShowConnection((prev) => !prev);
+  };
+  const handleToggleProductivity = () => {
+    setShowProductivity((prev) => !prev);
+  };
+
   return (
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
       <div className="flex flex-col items-center mb-6">
         <div className="flex gap-6 items-center">
-          <div className="flex items-center gap-2">
-            <span style={{ color: '#4ade80' }} className="text-sm">
+          {/* Each label is clickable, toggling its corresponding state */}
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={handleToggleHappiness}
+          >
+            {/* You could conditionally style it if it's hidden, for example by changing opacity */}
+            <span
+              style={{ color: showHappiness ? '#4ade80' : '#444444' }}
+              className="text-sm"
+            >
               Happiness
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span style={{ color: '#60a5fa' }} className="text-sm">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={handleToggleConnection}
+          >
+            <span
+              style={{ color: showConnection ? '#60a5fa' : '#444444' }}
+              className="text-sm"
+            >
               Connection
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span style={{ color: '#fbbf24' }} className="text-sm">
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={handleToggleProductivity}
+          >
+            <span
+              style={{ color: showProductivity ? '#fbbf24' : '#444444' }}
+              className="text-sm"
+            >
               Productivity
             </span>
           </div>
@@ -183,27 +218,34 @@ const EntryEmotionGraph = ({ data }) => {
               domain={[0, 1]}
               ticks={[0.2, 0.4, 0.6, 0.8, 1.0]}
             />
-            <Line
-              type="monotone"
-              dataKey="happiness"
-              stroke="#4ade80"
-              strokeWidth={3}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="connection"
-              stroke="#60a5fa"
-              strokeWidth={3}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="productivity"
-              stroke="#fbbf24"
-              strokeWidth={3}
-              dot={false}
-            />
+           {/* Conditionally render each line if it's visible */}
+           {showHappiness && (
+              <Line
+                type="monotone"
+                dataKey="happiness"
+                stroke="#4ade80"
+                strokeWidth={3}
+                dot={false}
+              />
+            )}
+            {showConnection && (
+              <Line
+                type="monotone"
+                dataKey="connection"
+                stroke="#60a5fa"
+                strokeWidth={3}
+                dot={false}
+              />
+            )}
+            {showProductivity && (
+              <Line
+                type="monotone"
+                dataKey="productivity"
+                stroke="#fbbf24"
+                strokeWidth={3}
+                dot={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
