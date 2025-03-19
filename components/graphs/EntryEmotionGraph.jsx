@@ -6,6 +6,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 
 /**
@@ -40,7 +41,6 @@ function generateMonthTicksUTC(start, end) {
     d.setUTCMonth(d.getUTCMonth() + 1);
     currentTime = d.getTime();
   }
-
   return ticks;
 }
 
@@ -61,6 +61,19 @@ function formatXAxisUTC(timestamp) {
     date = date.slice(1);
   }
   return date
+}
+
+/**
+ * Formats the tooltip label as a full date/time string (UTC).
+ * Example: "09/15/2025, 14:03:25"
+ */
+function formatTooltipDateTimeUTC(timestamp) {
+  return new Date(timestamp).toLocaleString(undefined, {
+    timeZone: 'UTC',
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+    });
 }
 
 /**
@@ -99,12 +112,12 @@ function getAveragedDataByDate(data) {
   const averagedData = Object.keys(dailyTotals).map((date) => ({
     dateValue: Date.UTC(
       parseInt(date.slice(0, 4)),          // year
-      parseInt(date.slice(5, 7)) - 1,      // month is 0-based
+      parseInt(date.slice(5, 7)) - 1,      // month (is 0-based)
       parseInt(date.slice(8, 10))          // day
     ),
-    happiness: dailyTotals[date].totalHappiness / dailyTotals[date].count,
-    connection: dailyTotals[date].totalConnection / dailyTotals[date].count,
-    productivity: dailyTotals[date].totalProductivity / dailyTotals[date].count,
+    happiness: parseFloat((dailyTotals[date].totalHappiness / dailyTotals[date].count).toFixed(2)),
+    connection: parseFloat((dailyTotals[date].totalConnection / dailyTotals[date].count).toFixed(2)),
+    productivity: parseFloat((dailyTotals[date].totalProductivity / dailyTotals[date].count).toFixed(2)),
   }));
 
   // Sort data chronologically
@@ -201,7 +214,8 @@ const EntryEmotionGraph = ({ data }) => {
           <LineChart
             data={averagedData}
             margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-          >
+            isAnimationActive={false}
+         >
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
             <XAxis
               dataKey="dateValue"
@@ -218,7 +232,14 @@ const EntryEmotionGraph = ({ data }) => {
               domain={[0, 1]}
               ticks={[0.2, 0.4, 0.6, 0.8, 1.0]}
             />
-           {/* Conditionally render each line if it's visible */}
+
+            {/* Tooltip for showing data values on hover */}
+            <Tooltip
+              labelFormatter={(timestamp) => formatTooltipDateTimeUTC(timestamp)}
+              contentStyle={{ backgroundColor: "#171717", border: "1px solid #333", color: "#fff" }}
+              labelStyle={{ color: "#737373" }}
+            />
+
            {showHappiness && (
               <Line
                 type="monotone"
@@ -226,6 +247,8 @@ const EntryEmotionGraph = ({ data }) => {
                 stroke="#4ade80"
                 strokeWidth={3}
                 dot={false}
+                activeDot={{ r: 5 }}
+                isAnimationActive={false}
               />
             )}
             {showConnection && (
@@ -235,6 +258,8 @@ const EntryEmotionGraph = ({ data }) => {
                 stroke="#60a5fa"
                 strokeWidth={3}
                 dot={false}
+                activeDot={{ r: 5 }}
+                isAnimationActive={false}
               />
             )}
             {showProductivity && (
@@ -244,6 +269,8 @@ const EntryEmotionGraph = ({ data }) => {
                 stroke="#fbbf24"
                 strokeWidth={3}
                 dot={false}
+                activeDot={{ r: 5 }}
+                isAnimationActive={false}
               />
             )}
           </LineChart>
