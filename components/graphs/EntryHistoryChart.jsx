@@ -58,11 +58,11 @@ function formatXAxisUTC(timestamp) {
 }
 
 /**
- * Formats a UTC timestamp into a full date-time string.
- * Example: "09/15/2025, 14:03:25"
+ * Formats a UTC timestamp into a full date-time string in AM/PM format.
+ * Example: "09/15/2025, 02:03:25 PM"
  */
 function formatTooltipDateTimeUTC(timestamp) {
-  return new Date(timestamp).toLocaleString(undefined, {
+  var date = new Date(timestamp).toLocaleString(undefined, {
     timeZone: 'UTC',
     month: '2-digit',
     day: '2-digit',
@@ -70,8 +70,19 @@ function formatTooltipDateTimeUTC(timestamp) {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false, // Set to true for AM/PM format
+    hour12: true,
   });
+  // remove leading zero from date and hor
+  var dateFirstHalf = date.slice(0,date.indexOf(",")+2);
+  var dateSecondHalf = date.slice(date.indexOf(",")+2);
+  if (dateFirstHalf[0] === "0") {
+    dateFirstHalf = dateFirstHalf.slice(1);
+  }
+  if (dateSecondHalf[0] === "0") {
+    dateSecondHalf = dateSecondHalf.slice(1);
+  }
+  date = dateFirstHalf + dateSecondHalf;
+  return date;
 }
 
 const EntryHistoryChart = ({ data }) => {

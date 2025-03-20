@@ -64,16 +64,20 @@ function formatXAxisUTC(timestamp) {
 }
 
 /**
- * Formats the tooltip label as a full date/time string (UTC).
- * Example: "09/15/2025, 14:03:25"
+ * Formats the tooltip label as a full date string.
+ * Example: "09/15/2025"
  */
 function formatTooltipDateTimeUTC(timestamp) {
-  return new Date(timestamp).toLocaleString(undefined, {
+  var date = new Date(timestamp).toLocaleString(undefined, {
     timeZone: 'UTC',
     month: '2-digit',
     day: '2-digit',
     year: 'numeric',
     });
+  if (date[0] === "0") {
+    date = date.slice(1);
+  }
+  return date;
 }
 
 /**
