@@ -113,8 +113,8 @@ export default async function handler(req, res) {
       entryHistoryData = chartEntries.map((row) => {
         const dateObj = new Date(row.dateTime);
         return {
-          date: dateObj.toISOString().split("T")[0],
-          timeValue: dateObj.getHours(),
+          date: dateObj.toISOString().split("T")[0], // Store full date
+          timeValue: dateObj.getHours() + dateObj.getMinutes() / 60 + dateObj.getSeconds() / 3600, // Store fractional hours
         };
       });
     }

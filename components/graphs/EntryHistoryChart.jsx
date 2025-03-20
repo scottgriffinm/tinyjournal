@@ -6,11 +6,17 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 
+/**
+ * Returns the UTC timestamp for the start of a given month, with an optional offset.
+ * 
+ * @param {number} timestamp - The timestamp representing the reference date.
+ * @param {number} [monthOffset=0] - The number of months to offset (negative for past months, positive for future months).
+ * @returns {number} - The UTC timestamp for the first day of the adjusted month at 00:00 UTC.
+ */
 function getStartOfMonthUTC(timestamp, monthOffset = 0) {
-  // Convert the original timestamp to a “year, month” in UTC,
-  // then reconstruct a date that is always the 1st at 00:00 UTC.
   const date = new Date(timestamp);
   const year = date.getUTCFullYear();
   const month = date.getUTCMonth();
@@ -51,6 +57,23 @@ function formatXAxisUTC(timestamp) {
   return date
 }
 
+/**
+ * Formats a UTC timestamp into a full date-time string.
+ * Example: "09/15/2025, 14:03:25"
+ */
+function formatTooltipDateTimeUTC(timestamp) {
+  return new Date(timestamp).toLocaleString(undefined, {
+    timeZone: 'UTC',
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false, // Set to true for AM/PM format
+  });
+}
+
 const EntryHistoryChart = ({ data }) => {
   if (!data || !data.length) {
     return (
@@ -61,29 +84,38 @@ const EntryHistoryChart = ({ data }) => {
   }
 
   // Convert each date string to a numeric timestamp
-  const chartData = data.map((item) => ({
-    ...item,
-    // If item.date is like "2025-01-01", parse in UTC so it doesn't shift
-    dateValue: Date.UTC(
-      parseInt(item.date.slice(0,4)),    // year
-      parseInt(item.date.slice(5,7)) - 1, // month is 0-based
-      parseInt(item.date.slice(8,10))    // day
-    )
-  }));
+  const chartData = data.map((item) => {
+    // Extract hours, minutes, and seconds from timeValue (now a decimal)
+    const hours = Math.floor(item.timeValue);
+    const minutes = Math.floor((item.timeValue % 1) * 60);
+    const seconds = Math.round(((item.timeValue * 60) % 1) * 60);
+  
+    return {
+      ...item,
+      dateValue: Date.UTC(
+        parseInt(item.date.slice(0, 4)),    // Year
+        parseInt(item.date.slice(5, 7)) - 1, // Month (0-based)
+        parseInt(item.date.slice(8, 10)),   // Day
+        hours, // Hours
+        minutes, // Minutes
+        seconds // Seconds
+      )
+    };
+  });
 
-  // Determine min and max date values
+  // Extract date range
   const dateValues = chartData.map((d) => d.dateValue);
   const minDate = Math.min(...dateValues);
   const maxDate = Math.max(...dateValues);
 
-  // Shift domain to the first of the *previous* month and *next* month
+  // Shift domain to the first of the previous month and next month
   const adjustedMinDate = getStartOfMonthUTC(minDate, -1); 
   const adjustedMaxDate = getStartOfMonthUTC(maxDate, 1);
 
   // Generate ticks at the start of each month in UTC
   const monthTicks = generateMonthTicksUTC(adjustedMinDate, adjustedMaxDate);
 
-  // Y-axis ticks example
+  // Format Y-axis values
   const yTicks = [4, 12, 20];
   const formatYAxis = (value) => {
     if (value === 4) return '4 am';
@@ -118,6 +150,21 @@ const EntryHistoryChart = ({ data }) => {
               ticks={yTicks}
               tickFormatter={formatYAxis}
               stroke="#737373"
+            />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const { dateValue } = payload[0].payload;
+                  return (
+                    <div style={{ backgroundColor: "#171717", border: "1px solid #333", padding: "8px", borderRadius: "4px", color: "#fff" }}>
+                      <p style={{ color: "#737373", margin: 0 }}>
+                        {formatTooltipDateTimeUTC(dateValue)}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
             <Scatter
               data={chartData}

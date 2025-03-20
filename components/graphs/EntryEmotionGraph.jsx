@@ -143,7 +143,7 @@ const EntryEmotionGraph = ({ data }) => {
   const minDate = Math.min(...dateValues);
   const maxDate = Math.max(...dateValues);
 
-  // Shift domain to the first of the *previous* and *next* month
+  // Shift domain to the first of the previous month and next month
   const adjustedMinDate = getStartOfMonthUTC(minDate, -1);
   const adjustedMaxDate = getStartOfMonthUTC(maxDate, 1);
 
@@ -157,6 +157,7 @@ const EntryEmotionGraph = ({ data }) => {
   const [showHappiness, setShowHappiness] = useState(true);
   const [showConnection, setShowConnection] = useState(true);
   const [showProductivity, setShowProductivity] = useState(true);
+
   // Toggle lines when labels are clicked
   const handleToggleHappiness = () => {
     setShowHappiness((prev) => !prev);
@@ -172,12 +173,10 @@ const EntryEmotionGraph = ({ data }) => {
     <div className="w-full bg-neutral-900 p-6 rounded-lg border border-neutral-800">
       <div className="flex flex-col items-center mb-6">
         <div className="flex gap-6 items-center">
-          {/* Each label is clickable, toggling its corresponding state */}
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={handleToggleHappiness}
           >
-            {/* You could conditionally style it if it's hidden, for example by changing opacity */}
             <span
               style={{ color: showHappiness ? '#4ade80' : '#444444' }}
               className="text-sm"
@@ -232,14 +231,11 @@ const EntryEmotionGraph = ({ data }) => {
               domain={[0, 1]}
               ticks={[0.2, 0.4, 0.6, 0.8, 1.0]}
             />
-
-            {/* Tooltip for showing data values on hover */}
             <Tooltip
               labelFormatter={(timestamp) => formatTooltipDateTimeUTC(timestamp)}
               contentStyle={{ backgroundColor: "#171717", border: "1px solid #333", color: "#fff" }}
               labelStyle={{ color: "#737373" }}
             />
-
            {showHappiness && (
               <Line
                 type="monotone"
