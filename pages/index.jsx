@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import TreasurePathBackground from "../components/backgrounds/TreasurePathBackground";
 import { requireAuth } from "../lib/auth";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -59,12 +60,15 @@ const Home = () => {
 
   return (
     <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
-      <div className="max-w-xl mx-auto space-y-6">
+     {/* Background Animation */}
+     <TreasurePathBackground />
+
+      <div className="relative z-10 max-w-xl mx-auto space-y-6">
         {/* Header */}
         <h1 className="text-2xl mb-10 mt-8">
          tiny journal
         </h1>
-
+        <div className="bg-neutral-900">
         {/* Menu Items */}
         <div className="space-y-4">
           <MenuItem data-testid="new-entry" label="new entry" path="/new-entry" />
@@ -86,6 +90,7 @@ const Home = () => {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </div>
