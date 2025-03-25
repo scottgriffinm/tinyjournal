@@ -60,8 +60,6 @@ const Home = () => {
 
   return (
     <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
-     {/* Background Animation */}
-     <TreasurePathBackground />
 
       <div className="relative z-10 max-w-xl mx-auto space-y-6">
         {/* Header */}
