@@ -90,70 +90,71 @@ const DrawingCanvas = ({ page, controls }) => {
             <canvas
                 ref={canvasRef}
                 className="fixed top-0 left-0 z-0"
-                style={{ pointerEvents: "auto" }}
+                style={{
+                    pointerEvents: tool ? "auto" : "none",
+                }}
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={endDrawing}
                 onMouseLeave={endDrawing}
             />
-
             {/* Toolbar with Drawing Controls */}
             {controls && (
-            <div className="fixed bottom-2 right-2 z-50 group">
-                <div className="flex items-center space-x-3 bg-neutral-900/80 p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
-                    {/* Pencil with conditional slider */}
-                    <div className="relative group flex items-center justify-center">
-                        {tool === "draw" && (
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2">
-                                <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <div className="flex justify-center bg-neutral-800 px-3 py-3 rounded-lg shadow-lg">
-                                        <input
-                                            type="range"
-                                            min="1"
-                                            max="50"
-                                            value={penSize}
-                                            onChange={(e) => setPenSize(parseInt(e.target.value))}
-                                            className="h-28 w-2 appearance-none bg-transparent cursor-pointer"
-                                            style={{
-                                                writingMode: "bt-lr",
-                                                WebkitAppearance: "slider-vertical",
-                                            }}
-                                        />
+                <div className="fixed bottom-2 right-2 z-50 group">
+                    <div className="flex items-center space-x-3 bg-neutral-900/80 p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+                        {/* Pencil with conditional slider */}
+                        <div className="relative group flex items-center justify-center">
+                            {tool === "draw" && (
+                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2">
+                                    <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <div className="flex justify-center bg-neutral-800 px-3 py-3 rounded-lg shadow-lg">
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="50"
+                                                value={penSize}
+                                                onChange={(e) => setPenSize(parseInt(e.target.value))}
+                                                className="h-28 w-2 appearance-none bg-transparent cursor-pointer"
+                                                style={{
+                                                    writingMode: "bt-lr",
+                                                    WebkitAppearance: "slider-vertical",
+                                                }}
+                                            />
+                                        </div>
                                     </div>
+
+                                    {/* Invisible hover bridge */}
+                                    <div className="absolute top-full left-0 w-full h-2 pointer-events-auto group-hover:block" />
                                 </div>
+                            )}
 
-                                {/* Invisible hover bridge */}
-                                <div className="absolute top-full left-0 w-full h-2 pointer-events-auto group-hover:block" />
-                            </div>
-                        )}
-
-                        {/* Pencil Button */}
-                        <button
+                            {/* Pencil Button */}
+                            <button
                             onClick={() => toggleTool("draw")}
-                            className={`w-10 h-10 flex items-center justify-center rounded transition-colors ${
-                                tool === "draw"
-                                    ? "bg-neutral-500"
-                                    : "bg-neutral-700 hover:bg-neutral-600"
+                            className={`p-3 rounded-lg border transition-colors
+                                ${tool === "draw"
+                                ? "bg-neutral-700 border-neutral-600"
+                                : "bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700"
+                                }`}
+                            >
+                            <Pencil className="text-neutral-400 w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Eraser Button */}
+                        <button
+                        onClick={() => toggleTool("erase")}
+                        className={`p-3 rounded-lg border transition-colors
+                            ${tool === "erase"
+                            ? "bg-neutral-700 border-neutral-600"
+                            : "bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700"
                             }`}
                         >
-                            <Pencil className="text-white w-5 h-5" />
+                        <Eraser className="text-neutral-400 w-5 h-5" />
                         </button>
                     </div>
-
-                    {/* Eraser Button */}
-                    <button
-                        onClick={() => toggleTool("erase")}
-                        className={`w-10 h-10 flex items-center justify-center rounded transition-colors ${
-                            tool === "erase"
-                                ? "bg-neutral-500"
-                                : "bg-neutral-700 hover:bg-neutral-600"
-                        }`}
-                    >
-                        <Eraser className="text-white w-5 h-5" />
-                    </button>
                 </div>
-            </div> 
-        )}
+            )}
         </>
     );
 };
