@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
 import JournalEntryAnalysis from '../components/dashboards/JournalEntryAnalysis';
+import DrawingCanvas from "../components/backgrounds/DrawingCanvas";
 import { updateCache } from '../lib/localStorageCache'; // Import caching functions
 const CACHE_KEY = "journalEntries";
 
@@ -29,12 +30,12 @@ const NewEntry = () => {
 
   const handleDelete = () => {
     setEntry('');
+    localStorage.removeItem("canvasDrawing_temp"); // delete temporary drawing data
     setShowDeleteDialog(false);
     router.push("/");
   };
 
   const handleSave = async () => {
-
     setIsSaving(true); // Start loader
     try {
       const response = await fetch('/api/create-entry', {
@@ -47,7 +48,7 @@ const NewEntry = () => {
         console.log('Entry successfully saved!');
         const data = await response.json();
 
-        // Update cache with the new entry
+        // Update Journal Entries cache
         const newEntry = {
           id: data.id,
           formattedDate: new Date(data.dateTime).toLocaleDateString('en-US', {
@@ -59,6 +60,14 @@ const NewEntry = () => {
         };
         updateCache(CACHE_KEY, newEntry);
 
+        // Update drawings cache
+        const newKey = `entry_${data.id}`;
+        const drawingData = getCache("temp");
+        if (drawingData) {
+          setCache(newKey, drawingData);
+          // delete temp data
+          localStorage.removeItem("canvasDrawing_temp");
+        }
         // Remove entry text
         setEntry('');
         setShowSaveDialog(false);
@@ -115,7 +124,7 @@ const NewEntry = () => {
           <Trash2 className="w-5 h-5 text-neutral-400" />
         </button>
         <button
-        data-testid="save-button"
+          data-testid="save-button"
           onClick={() => entry.trim() && setShowSaveDialog(true)}
           className="bg-neutral-800/50 p-3 rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 border border-neutral-700"
           disabled={!entry.trim()}
@@ -124,6 +133,9 @@ const NewEntry = () => {
         </button>
 
       </div>
+
+      {/* Drawing canvas */}
+      <DrawingCanvas page="temp" controls={true} />
 
       {/* Full-screen textarea */}
       <textarea
@@ -177,7 +189,7 @@ const NewEntry = () => {
               cancel
             </AlertDialogCancel>
             <AlertDialogAction
-            data-testid="save-dialog-save-button"
+              data-testid="save-dialog-save-button"
               className="bg-green-900 hover:bg-green-800 text-neutral-300 border border-green-800"
               onClick={handleSave}
             >
@@ -198,7 +210,7 @@ const NewEntry = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-            data-testid="error-dialog-close-button"
+              data-testid="error-dialog-close-button"
               className="bg-neutral-700 text-neutral-300 hover:bg-neutral-600 border border-neutral-600 mt-2"
               onClick={() => setShowErrorDialog(false)}
             >
@@ -276,8 +288,6 @@ const NewEntry = () => {
                 </button>
               </div>
             </div>
-
-
           </div>
         </div>
       )}

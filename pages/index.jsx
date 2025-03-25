@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import TreasurePathBackground from "../components/backgrounds/TreasurePathBackground";
+import DrawingCanvas from "../components/backgrounds/DrawingCanvas";
 import { requireAuth } from "../lib/auth";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -60,7 +60,7 @@ const Home = () => {
 
   return (
     <div className="bg-neutral-900 p-6 min-h-screen text-neutral-300 font-mono">
-
+     <DrawingCanvas page="index" controls={true} />
       <div className="relative z-10 max-w-xl mx-auto space-y-6">
         {/* Header */}
         <h1 className="text-2xl mb-10 mt-8">
@@ -94,6 +94,7 @@ const Home = () => {
     </div>
   );
 };
+
 
 // Redirect users to login page if not signed in
 export async function getServerSideProps(context) {

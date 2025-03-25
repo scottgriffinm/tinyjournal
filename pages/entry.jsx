@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { ArrowLeft } from "lucide-react";
 import { getCache, setCache } from "../lib/localStorageCache";
 import JournalEntryAnalysis from "../components/dashboards/JournalEntryAnalysis"; // Import the analysis component
+import DrawingCanvas from "../components/backgrounds/DrawingCanvas";
 
 const CACHE_KEY_PREFIX = "entry_";
 
@@ -67,6 +68,8 @@ const EntryView = () => {
 
         {/* Journal entry text */}
         <div data-testid="journal-entry-text" className="whitespace-pre-wrap leading-relaxed text-neutral-300 mb-8">
+         {/* Drawing canvas */}
+          <DrawingCanvas page={cacheKey} controls={false}/>
           {entry.text}
         </div>
 
