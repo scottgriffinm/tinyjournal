@@ -26,6 +26,7 @@ package-lock.json
 .DS_Store
 *.pem
 dir_prompt.txt
+directoryToPrompt.py
 
 # debug
 npm-debug.log*

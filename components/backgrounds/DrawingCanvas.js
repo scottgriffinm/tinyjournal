@@ -78,7 +78,7 @@ const DrawingCanvas = ({ page, controls }) => {
 
         setIsDrawing(false);
         setHasMoved(false);
-        setCache(CACHE_KEY, canvas.toDataURL());
+        setCache(CACHE_KEY, canvas.toDataURL(), Infinity);
     };
 
     const toggleTool = (selectedTool) => {

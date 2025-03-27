@@ -60,14 +60,15 @@ const NewEntry = () => {
         };
         updateCache(CACHE_KEY, newEntry);
 
-        // Update drawings cache
+        // Set drawing cache for the new entry
         const newKey = `entry_${data.id}`;
         const drawingData = getCache("temp");
         if (drawingData) {
-          setCache(newKey, drawingData);
+          setCache(newKey, drawingData, Infinity);
           // delete temp data
           localStorage.removeItem("canvasDrawing_temp");
         }
+
         // Remove entry text
         setEntry('');
         setShowSaveDialog(false);
